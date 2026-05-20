@@ -1,0 +1,80 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import AddTransaction from './pages/AddTransaction.jsx';
+import Calculator from './pages/Calculator.jsx';
+import Clients from './pages/Clients.jsx';
+import Mileage from './pages/Mileage.jsx';
+import CreateInvoice from './pages/CreateInvoice.jsx';
+import Products from './pages/Products.jsx';
+import Analytics from './pages/Analytics.jsx';
+import Goals from './pages/Goals.jsx';
+import Settings from './pages/Settings.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import Invoices from './pages/Invoices.jsx';
+import Reports from './pages/Reports.jsx';
+import ExportPage from './pages/Export.jsx';
+import Receipts from './pages/Receipts.jsx';
+import AdminOverview from './pages/AdminOverview.jsx';
+import TaxBuckets from './pages/TaxBuckets.jsx';
+import RevenueDashboard from './pages/Dashboard.jsx';
+import IncomeStreams from './pages/IncomeStreams.jsx';
+import Navbar from './components/Navbar.jsx';
+
+const PrivateRoute = ({ children }) => {
+  const { token, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="loading-spinner" style={{ height: '100vh' }}>
+        <div className="spinner" />
+        <span>Loading...</span>
+      </div>
+    );
+  }
+  return token ? (
+    <div className="app-layout">
+      <Navbar />
+      <main className="main-content">{children}</main>
+    </div>
+  ) : (
+    <Navigate to="/login" replace />
+  );
+};
+
+function App() {
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      {/* Protected routes */}
+      <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+      <Route path="/transactions" element={<PrivateRoute><AddTransaction /></PrivateRoute>} />
+      <Route path="/income-streams" element={<PrivateRoute><IncomeStreams /></PrivateRoute>} />
+      <Route path="/calculator" element={<PrivateRoute><Calculator /></PrivateRoute>} />
+      <Route path="/mileage" element={<PrivateRoute><Mileage /></PrivateRoute>} />
+      <Route path="/clients" element={<PrivateRoute><Clients /></PrivateRoute>} />
+      <Route path="/create-invoices" element={<PrivateRoute><CreateInvoice /></PrivateRoute>} />
+      <Route path="/invoices" element={<PrivateRoute><Invoices /></PrivateRoute>} />
+      <Route path="/goals" element={<PrivateRoute><Goals /></PrivateRoute>} />
+      <Route path="/tax-buckets" element={<PrivateRoute><TaxBuckets /></PrivateRoute>} />
+      <Route path="/products" element={<PrivateRoute><Products /></PrivateRoute>} />
+      <Route path="/analytics" element={<PrivateRoute><Analytics /></PrivateRoute>} />
+      <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
+      <Route path="/export" element={<PrivateRoute><ExportPage /></PrivateRoute>} />
+      <Route path="/receipts" element={<PrivateRoute><Receipts /></PrivateRoute>} />
+      <Route path="/admin" element={<PrivateRoute><AdminOverview /></PrivateRoute>} />
+      <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+      <Route path="/dashboard/revenue" element={<PrivateRoute><RevenueDashboard /></PrivateRoute>} />
+
+      {/* Default redirect */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
+}
+
+export default App;
