@@ -2,16 +2,9 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const twilio = require('twilio');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// Nodemailer transporter using Gmail credentials
-const mailer = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS   // Use an App Password, not your Gmail login password
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -215,11 +208,11 @@ const sendOtp = async (req, res) => {
     await user.save();
 
     if (isEmail) {
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        return res.status(500).json({ msg: 'Server email configuration is missing. Please add EMAIL_USER and EMAIL_PASS to environment variables.' });
+      if (!process.env.RESEND_API_KEY) {
+        return res.status(500).json({ msg: 'Email service not configured. Please add RESEND_API_KEY to Render environment variables.' });
       }
-      await mailer.sendMail({
-        from: `"Side Hustle App" <${process.env.EMAIL_USER}>`,
+      const { data, error: resendError } = await resend.emails.send({
+        from: 'Side Hustle App <onboarding@resend.dev>',
         to: target,
         subject: 'Your Login OTP',
         html: `
@@ -238,7 +231,7 @@ const sendOtp = async (req, res) => {
               </span>
             </div>
             <p style="font-size: 13px; color: #94a3b8; text-align: center;">
-              This OTP expires in 60 seconds
+              This OTP expires in 10 minutes
             </p>
             <p style="font-size: 12px; color: #64748b; text-align: center; margin-top: 24px;">
               If you didn't request this, please ignore this email.
@@ -246,6 +239,15 @@ const sendOtp = async (req, res) => {
           </div>
         `
       });
+      if (resendError) {
+        // Resend free plan: can only send to verified email addresses
+        if (resendError.name === 'validation_error' || resendError.message?.toLowerCase().includes('testing') || resendError.message?.toLowerCase().includes('can only send')) {
+          return res.status(403).json({
+            msg: `📧 This email (${target}) is not verified in Resend. Please ask the admin to verify it at resend.com/audiences, or use your registered email instead.`
+          });
+        }
+        throw new Error(resendError.message);
+      }
     } else {
       try {
         await twilioClient.messages.create({
