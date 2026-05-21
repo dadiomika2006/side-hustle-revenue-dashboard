@@ -73,13 +73,19 @@ const Login = () => {
 
   // ── OTP handlers ──────────────────────────────────────────────────────────
   const startCountdown = () => {
-    setCountdown(60);
+    setCountdown(600); // 10 minutes
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) { clearInterval(interval); return 0; }
         return prev - 1;
       });
     }, 1000);
+  };
+
+  const formatCountdown = (secs) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
   };
 
   const handleSendOtp = async () => {
@@ -448,8 +454,8 @@ const Login = () => {
                     {countdown > 0 ? (
                       <p style={{ color: '#94a3b8', fontSize: '13px' }}>
                         OTP expires in{' '}
-                        <span style={{ color: countdown <= 10 ? '#ef4444' : '#10b981', fontWeight: 700 }}>
-                          {countdown}s
+                        <span style={{ color: countdown <= 30 ? '#ef4444' : '#10b981', fontWeight: 700 }}>
+                          {formatCountdown(countdown)}
                         </span>
                       </p>
                     ) : (
@@ -472,7 +478,7 @@ const Login = () => {
 
                   <button
                     type="button" onClick={handleVerifyOtp}
-                    disabled={otpLoading || countdown === 0 || otpCode.length !== 6}
+                    disabled={otpLoading || otpCode.length !== 6}
                     className="btn btn-primary"
                     style={{ width: '100%', justifyContent: 'center', padding: '13px', fontSize: '15px' }}
                   >
