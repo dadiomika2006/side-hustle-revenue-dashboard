@@ -2,9 +2,16 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const twilio = require('twilio');
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Nodemailer transporter using Gmail credentials
+const mailer = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS   // Use an App Password, not your Gmail login password
+  }
+});
 
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -208,11 +215,11 @@ const sendOtp = async (req, res) => {
     await user.save();
 
     if (isEmail) {
-      if (!process.env.RESEND_API_KEY) {
-        return res.status(500).json({ msg: 'Server email configuration is missing. Please add RESEND_API_KEY to Render environment variables.' });
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        return res.status(500).json({ msg: 'Server email configuration is missing. Please add EMAIL_USER and EMAIL_PASS to environment variables.' });
       }
-      const { error: resendError } = await resend.emails.send({
-        from: 'Side Hustle App <onboarding@resend.dev>',
+      await mailer.sendMail({
+        from: `"Side Hustle App" <${process.env.EMAIL_USER}>`,
         to: target,
         subject: 'Your Login OTP',
         html: `
@@ -239,7 +246,6 @@ const sendOtp = async (req, res) => {
           </div>
         `
       });
-      if (resendError) throw new Error(resendError.message);
     } else {
       await twilioClient.messages.create({
         body: `Your Side Hustle OTP is ${otp}. Expires in 60 seconds.`,
