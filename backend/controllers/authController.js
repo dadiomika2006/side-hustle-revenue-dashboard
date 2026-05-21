@@ -9,7 +9,9 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
-  }
+  },
+  connectionTimeout: 5000,
+  socketTimeout: 5000
 });
 
 const twilioClient = twilio(
@@ -214,6 +216,9 @@ const sendOtp = async (req, res) => {
     await user.save();
 
     if (isEmail) {
+      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        return res.status(500).json({ msg: 'Server email configuration is missing. Please add EMAIL_USER and EMAIL_PASS to Render environment variables.' });
+      }
       await transporter.sendMail({
         from: `"Side Hustle App" <${process.env.EMAIL_USER}>`,
         to: target,
