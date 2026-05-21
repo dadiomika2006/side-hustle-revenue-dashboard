@@ -17,9 +17,18 @@ const allowedOrigins = [
 ].filter(Boolean).map(url => url.replace(/\/$/, ''));
 
 app.use(cors({
-  origin:  (origin, callback) => {
+  origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, Render health checks)
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is localhost or Vercel
+    const isLocalhost = origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:');
+    const isVercel = origin.endsWith('.vercel.app');
+    const isAllowed = allowedOrigins.includes(origin) || isLocalhost || isVercel;
+    
+    if (isAllowed) {
+      return callback(null, true);
+    }
     callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,
