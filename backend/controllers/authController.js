@@ -9,13 +9,18 @@ const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
-  connectionTimeout: 5000,
-  socketTimeout: 5000
+  connectionTimeout: 10000,
+  socketTimeout: 10000,
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
 const twilioClient = twilio(
