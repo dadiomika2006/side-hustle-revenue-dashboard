@@ -247,11 +247,21 @@ const sendOtp = async (req, res) => {
         `
       });
     } else {
-      await twilioClient.messages.create({
-        body: `Your Side Hustle OTP is ${otp}. Expires in 60 seconds.`,
-        from: process.env.TWILIO_PHONE,
-        to: target
-      });
+      try {
+        await twilioClient.messages.create({
+          body: `Your Side Hustle OTP is ${otp}. Expires in 10 minutes.`,
+          from: process.env.TWILIO_PHONE,
+          to: target
+        });
+      } catch (twilioErr) {
+        // Twilio trial accounts can only SMS verified numbers
+        if (twilioErr.code === 21608) {
+          return res.status(403).json({
+            msg: '📵 Phone OTP is unavailable for unverified numbers on a trial account. Please use Email OTP instead.'
+          });
+        }
+        throw twilioErr; // re-throw other Twilio errors
+      }
     }
 
     res.json({
