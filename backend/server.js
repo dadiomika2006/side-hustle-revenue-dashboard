@@ -12,11 +12,12 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
+  'https://side-hustle-revenue-dashboard.vercel.app',
   process.env.FRONTEND_URL  // e.g. https://side-hustle-app.vercel.app
-].filter(Boolean);
+].filter(Boolean).map(url => url.replace(/\/$/, ''));
 
 app.use(cors({
-  origin: (origin, callback) => {
+  origin:  (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, Render health checks)
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error(`CORS blocked: ${origin}`));
