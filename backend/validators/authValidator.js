@@ -8,23 +8,14 @@ const registerValidator = [
   body('email')
     .isEmail().withMessage('Please enter a valid email')
     .normalizeEmail(),
-  body('phone')
-    .optional()
-    .trim()
-    .isMobilePhone('any', { strictMode: false })
-    .withMessage('Please provide a valid phone number'),
   body('password')
     .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
 ];
 
 const loginValidator = [
   body('email')
-    .optional()
     .isEmail().withMessage('Please enter a valid email')
     .normalizeEmail(),
-  body('phone')
-    .optional()
-    .trim(),
   body('password')
     .notEmpty().withMessage('Password is required'),
 ];
