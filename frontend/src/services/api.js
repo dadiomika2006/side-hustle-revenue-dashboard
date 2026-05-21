@@ -35,16 +35,4 @@ api.interceptors.response.use(
   }
 );
 
-// ── OTP API calls (added for "Try Another Way" login) ────────────────────────
-
-// Send OTP to email or phone
-export const sendOtp = (target) =>
-  api.post('/auth/send-otp', { target });
-
-// Verify OTP and get back token + user
-export const verifyOtp = (target, otp) =>
-  api.post('/auth/verify-otp', { target, otp });
-
-// ─────────────────────────────────────────────────────────────────────────────
-
 export default api;

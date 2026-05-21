@@ -1,15 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const twilio = require('twilio');
-const { Resend } = require('resend');
-
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const twilioClient = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
 
 const register = async (req, res) => {
   const errors = validationResult(req);
@@ -18,21 +9,14 @@ const register = async (req, res) => {
   }
 
   try {
-    const { name, email, password, businessName, phone } = req.body;
+    const { name, email, password, businessName } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ msg: 'User already exists with that email' });
     }
 
-    if (phone) {
-      const existingPhoneUser = await User.findOne({ phone });
-      if (existingPhoneUser) {
-        return res.status(400).json({ msg: 'Phone number is already in use' });
-      }
-    }
-
-    const user = new User({ name, email, password, businessName, phone });
+    const user = new User({ name, email, password, businessName });
     await user.save();
 
     const token = jwt.sign(
@@ -70,22 +54,19 @@ const login = async (req, res) => {
   }
 
   try {
-    const { email, phone, password } = req.body;
+    const { email, password } = req.body;
 
-    const identifier = email || phone;
-    if (!identifier) {
-      return res.status(400).json({ msg: 'Email or phone number is required' });
+    if (!email) {
+      return res.status(400).json({ msg: 'Email is required' });
     }
 
-    const user = await User.findOne(email ? { email: email.toLowerCase() } : { phone });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      console.warn(`Login attempt failed: User not found for ${email ? 'email' : 'phone'} ${identifier}`);
       return res.status(401).json({ msg: 'Invalid credentials' });
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      console.warn(`Login attempt failed: Incorrect password for ${email ? 'email' : 'phone'} ${identifier}`);
       return res.status(401).json({ msg: 'Invalid credentials' });
     }
 
@@ -111,7 +92,7 @@ const login = async (req, res) => {
     console.error('Login error details:', {
       message: err.message,
       stack: err.stack,
-      identifier: req.body?.email || req.body?.phone
+      identifier: req.body?.email
     });
     res.status(500).json({ msg: 'Server error during login' });
   }
@@ -168,8 +149,7 @@ const updateProfile = async (req, res) => {
       businessName: user.businessName,
       currency: user.currency,
       themeMode: user.themeMode,
-      address: user.address,
-      phone: user.phone
+      address: user.address
     });
   } catch (err) {
     console.error('updateProfile error:', err);
@@ -177,165 +157,11 @@ const updateProfile = async (req, res) => {
   }
 };
 
-const sendOtp = async (req, res) => {
-  try {
-    const { target } = req.body;
-
-    if (!target) {
-      return res.status(400).json({ msg: 'Email or phone number is required' });
-    }
-
-    const isEmail = target.includes('@');
-
-    const query = isEmail ? { email: target.toLowerCase() } : { phone: target };
-    const user = await User.findOne(query);
-
-    if (!user) {
-      return res.status(404).json({
-        msg: isEmail
-          ? 'No account found with that email'
-          : 'No account found with that phone number'
-      });
-    }
-
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-    user.otp = otp;
-    user.otpExpires = otpExpires;
-    user.otpTarget = target;
-    user.otpType = isEmail ? 'email' : 'phone';
-    await user.save();
-
-    if (isEmail) {
-      if (!process.env.RESEND_API_KEY) {
-        return res.status(500).json({ msg: 'Email service not configured. Please add RESEND_API_KEY to Render environment variables.' });
-      }
-      const { data, error: resendError } = await resend.emails.send({
-        from: 'Side Hustle App <onboarding@resend.dev>',
-        to: target,
-        subject: 'Your Login OTP',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;
-                      background: #1a1a2e; color: #e2e8f0; padding: 32px; border-radius: 12px;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <span style="font-size: 40px;">💰</span>
-              <h2 style="color: #6366f1; margin: 8px 0;">Side Hustle</h2>
-            </div>
-            <p style="font-size: 15px; color: #94a3b8;">Your one-time login OTP is:</p>
-            <div style="text-align: center; margin: 24px 0;">
-              <span style="font-size: 42px; font-weight: 800; letter-spacing: 10px;
-                           color: #10b981; background: rgba(16,185,129,0.1);
-                           padding: 16px 24px; border-radius: 10px;">
-                ${otp}
-              </span>
-            </div>
-            <p style="font-size: 13px; color: #94a3b8; text-align: center;">
-              This OTP expires in 10 minutes
-            </p>
-            <p style="font-size: 12px; color: #64748b; text-align: center; margin-top: 24px;">
-              If you didn't request this, please ignore this email.
-            </p>
-          </div>
-        `
-      });
-      if (resendError) {
-        // Resend free plan: can only send to verified email addresses
-        if (resendError.name === 'validation_error' || resendError.message?.toLowerCase().includes('testing') || resendError.message?.toLowerCase().includes('can only send')) {
-          return res.status(403).json({
-            msg: `📧 This email (${target}) is not verified in Resend. Please ask the admin to verify it at resend.com/audiences, or use your registered email instead.`
-          });
-        }
-        throw new Error(resendError.message);
-      }
-    } else {
-      try {
-        await twilioClient.messages.create({
-          body: `Your Side Hustle OTP is ${otp}. Expires in 10 minutes.`,
-          from: process.env.TWILIO_PHONE,
-          to: target
-        });
-      } catch (twilioErr) {
-        // Twilio trial accounts can only SMS verified numbers
-        if (twilioErr.code === 21608) {
-          return res.status(403).json({
-            msg: '📵 Phone OTP is unavailable for unverified numbers on a trial account. Please use Email OTP instead.'
-          });
-        }
-        throw twilioErr; // re-throw other Twilio errors
-      }
-    }
-
-    res.json({
-      msg: `OTP sent to your ${isEmail ? 'email' : 'phone'}`,
-      otpType: isEmail ? 'email' : 'phone',
-      expiresIn: 600 // 10 minutes
-    });
-  } catch (err) {
-    console.error('sendOtp error:', err);
-    res.status(500).json({ msg: 'Server error while sending OTP' });
-  }
-};
-
-const verifyOtp = async (req, res) => {
-  try {
-    const { target, otp } = req.body;
-
-    if (!target || !otp) {
-      return res.status(400).json({ msg: 'Target and OTP are required' });
-    }
-
-    const isEmail = target.includes('@');
-    const query = isEmail ? { email: target.toLowerCase() } : { phone: target };
-    const user = await User.findOne(query);
-
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
-    }
-
-    if (user.otp !== otp) {
-      return res.status(400).json({ msg: 'Invalid OTP' });
-    }
-
-    if (!user.otpExpires || user.otpExpires < new Date()) {
-      return res.status(400).json({ msg: 'OTP has expired. Please request a new one.' });
-    }
-
-    user.otp = null;
-    user.otpExpires = null;
-    user.otpTarget = null;
-    user.otpType = null;
-    await user.save();
-
-    const token = jwt.sign(
-      { id: user._id.toString(), role: user.role || 'user' },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        businessName: user.businessName,
-        currency: user.currency || 'USD',
-        themeMode: user.themeMode || 'dark'
-      }
-    });
-  } catch (err) {
-    console.error('verifyOtp error:', err);
-    res.status(500).json({ msg: 'Server error while verifying OTP' });
-  }
-};
-
 const listUsers = async (req, res) => {
   try {
     const mongoose = require('mongoose');
-    const users = await User.find().select('-password -otp -otpExpires -otpTarget -otpType');
-    
+    const users = await User.find().select('-password');
+
     const Client = mongoose.model('Client');
     const Transaction = mongoose.model('Transaction');
     const Invoice = mongoose.model('Invoice');
@@ -393,4 +219,4 @@ const updateUserRole = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, updateProfile, sendOtp, verifyOtp, listUsers, updateUserRole };
+module.exports = { register, login, getMe, updateProfile, listUsers, updateUserRole };

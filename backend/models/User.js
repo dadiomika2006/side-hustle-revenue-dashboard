@@ -51,35 +51,7 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
-  address: addressSchema,
-  phone: {
-    type: String,
-    trim: true,
-    validate: {
-      validator: (v) => !v || validator.isMobilePhone(v, 'any', { strictMode: false }),
-      message: 'Please provide a valid phone number'
-    }
-  },
-
-  // ── OTP fields (added for "Try Another Way" login) ──────────────────
-  otp: {
-    type: String,
-    default: null
-  },
-  otpExpires: {
-    type: Date,
-    default: null
-  },
-  otpTarget: {
-    type: String,   // stores the email or phone the OTP was sent to
-    default: null
-  },
-  otpType: {
-    type: String,   // 'email' or 'phone'
-    enum: ['email', 'phone'],
-    default: null
-  }
-  // ────────────────────────────────────────────────────────────────────
+  address: addressSchema
 
 }, {
   timestamps: true
@@ -105,11 +77,7 @@ UserSchema.methods.comparePassword = async function(password) {
 UserSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password;
-  delete user.otp; 
-  delete user.otpExpires;  
-  delete user.otpTarget;   
-  delete user.otpType;
   return user;
-};  
+};
+
 module.exports = mongoose.model('User', UserSchema);
-   

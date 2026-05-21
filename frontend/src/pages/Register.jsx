@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { MdPerson, MdEmail, MdLock, MdBusiness, MdVisibility, MdVisibilityOff, MdPhone } from 'react-icons/md';
+import { MdPerson, MdEmail, MdLock, MdBusiness, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -9,7 +9,6 @@ const Register = () => {
   const [formData, setFormData] = useState({ 
     name: '', 
     email: '', 
-    phone: '', 
     password: '', 
     businessName: '' 
   });
@@ -28,13 +27,6 @@ const Register = () => {
     setError('Password must be at least 6 characters.');
     return;
   }
-
-  // ── Phone format validation ──────────────────────────
-  if (formData.phone && !/^\+[1-9]\d{7,14}$/.test(formData.phone)) {
-    setError('Phone number must include country code (e.g. +91XXXXXXXXXX)');
-    return;
-  }
-  // ────────────────────────────────────────────────────
 
   setLoading(true);
   setError('');
@@ -93,24 +85,6 @@ const Register = () => {
                 style={{ paddingLeft:'42px' }} 
                 placeholder="you@example.com" 
                 value={formData.email} 
-                onChange={handleChange} 
-              />
-            </div>
-          </div>
-
-          {/* Phone Number */}
-          <div className="form-group">
-            <label className="form-label">Phone Number (optional)</label>
-            <div style={{ position:'relative' }}>
-              <MdPhone style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#6366f1', fontSize:'18px', pointerEvents:'none' }} />
-              <input 
-                id="phone" 
-                name="phone" 
-                type="tel" 
-                className="form-input" 
-                style={{ paddingLeft:'42px' }} 
-                placeholder="+91XXXXXXXXXX"
-                value={formData.phone} 
                 onChange={handleChange} 
               />
             </div>
