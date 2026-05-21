@@ -3,6 +3,10 @@ const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const nodemailer = require('nodemailer');
 const twilio = require('twilio');
+const dns = require('dns');
+
+// Force Node to prefer IPv4 (Fixes ENETUNREACH IPv6 errors on Render)
+dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
