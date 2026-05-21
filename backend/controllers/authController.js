@@ -1,24 +1,10 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const nodemailer = require('nodemailer');
 const twilio = require('twilio');
-const dns = require('dns');
+const { Resend } = require('resend');
 
-// Force Node to prefer IPv4 (Fixes ENETUNREACH IPv6 errors on Render)
-dns.setDefaultResultOrder('ipv4first');
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  connectionTimeout: 10000,
-  socketTimeout: 10000
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -222,11 +208,11 @@ const sendOtp = async (req, res) => {
     await user.save();
 
     if (isEmail) {
-      if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        return res.status(500).json({ msg: 'Server email configuration is missing. Please add EMAIL_USER and EMAIL_PASS to Render environment variables.' });
+      if (!process.env.RESEND_API_KEY) {
+        return res.status(500).json({ msg: 'Server email configuration is missing. Please add RESEND_API_KEY to Render environment variables.' });
       }
-      await transporter.sendMail({
-        from: `"Side Hustle App" <${process.env.EMAIL_USER}>`,
+      const { error: resendError } = await resend.emails.send({
+        from: 'Side Hustle App <onboarding@resend.dev>',
         to: target,
         subject: 'Your Login OTP',
         html: `
@@ -253,6 +239,7 @@ const sendOtp = async (req, res) => {
           </div>
         `
       });
+      if (resendError) throw new Error(resendError.message);
     } else {
       await twilioClient.messages.create({
         body: `Your Side Hustle OTP is ${otp}. Expires in 60 seconds.`,
