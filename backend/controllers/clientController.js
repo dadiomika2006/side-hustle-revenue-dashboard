@@ -1,4 +1,6 @@
 const Client = require('../models/Client');
+const Transaction = require('../models/Transaction');
+const mongoose = require('mongoose');
 const { validationResult } = require('express-validator');
 
 // @desc Get all clients for logged in user
