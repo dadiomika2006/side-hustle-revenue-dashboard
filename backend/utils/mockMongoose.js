@@ -120,6 +120,7 @@ class MockQuery {
     this.mode = mode;
     this._sort = null;
     this._limit = null;
+    this._skip = null;
     this._populate = [];
     this._select = null;
   }
@@ -131,6 +132,11 @@ class MockQuery {
   
   limit(l) {
     this._limit = l;
+    return this;
+  }
+
+  skip(s) {
+    this._skip = s;
     return this;
   }
   
@@ -167,9 +173,12 @@ class MockQuery {
       });
     }
     
-    // Apply limit
+    // Apply skip and limit
+    let skipVal = this._skip || 0;
     if (this._limit !== null && this._limit !== undefined) {
-      results = results.slice(0, this._limit);
+      results = results.slice(skipVal, skipVal + this._limit);
+    } else if (skipVal > 0) {
+      results = results.slice(skipVal);
     }
     
     // Apply populate
@@ -285,6 +294,26 @@ const mockMongoose = {
           return !this.password.startsWith('$2a$') && !this.password.startsWith('$2b$');
         }
         return true;
+      }
+
+      async populate(paths) {
+        const db = readDB();
+        const popPaths = Array.isArray(paths) ? paths : [paths];
+        
+        for (const pop of popPaths) {
+          let pathName = typeof pop === 'string' ? pop : pop.path;
+          // Resolve collections by appending 's' (e.g. client -> clients)
+          let foreignColName = pathName.toLowerCase() + 's';
+          if (pathName === 'incomeStream') foreignColName = 'incomestreams';
+          const foreignData = db[foreignColName] || [];
+          
+          const idToFind = this[pathName];
+          if (idToFind) {
+            const found = foreignData.find(x => x._id === idToFind.toString());
+            this[pathName] = found ? { ...found, id: found._id } : idToFind;
+          }
+        }
+        return this;
       }
       
       async save() {
@@ -451,19 +480,40 @@ const mockMongoose = {
           
           for (const item of data) {
             let keyVal = 'null';
+            let evaluatedId = null;
             if (groupKey && groupKey !== 'null') {
-              if (typeof groupKey === 'object' && groupKey.$month) {
-                const dateField = groupKey.$month.replace('$', '');
-                const dateStr = item[dateField];
-                keyVal = dateStr ? new Date(dateStr).getMonth() + 1 : 1;
+              if (typeof groupKey === 'object') {
+                if (groupKey.$month) {
+                  const dateField = groupKey.$month.replace('$', '');
+                  const dateStr = item[dateField];
+                  evaluatedId = dateStr ? new Date(dateStr).getMonth() + 1 : 1;
+                  keyVal = String(evaluatedId);
+                } else {
+                  // It's a compound object like { client: '$client', type: '$type' }
+                  const evaluatedObj = {};
+                  for (const [k, v] of Object.entries(groupKey)) {
+                    if (typeof v === 'string' && v.startsWith('$')) {
+                      const field = v.replace('$', '');
+                      evaluatedObj[k] = item[field] !== undefined && item[field] !== null ? item[field].toString() : null;
+                    } else {
+                      evaluatedObj[k] = v;
+                    }
+                  }
+                  evaluatedId = evaluatedObj;
+                  keyVal = JSON.stringify(evaluatedObj);
+                }
               } else if (typeof groupKey === 'string' && groupKey.startsWith('$')) {
                 const groupField = groupKey.replace('$', '');
-                keyVal = item[groupField] !== undefined && item[groupField] !== null ? item[groupField].toString() : 'null';
+                evaluatedId = item[groupField] !== undefined && item[groupField] !== null ? item[groupField].toString() : 'null';
+                keyVal = String(evaluatedId);
               }
+            } else {
+              evaluatedId = null;
+              keyVal = 'null';
             }
             
             if (!groups[keyVal]) {
-              groups[keyVal] = { _id: keyVal };
+              groups[keyVal] = { _id: evaluatedId };
               // Initialize other grouped accumulator fields (e.g. revenue, expenses, total)
               for (const [gKey, gVal] of Object.entries(stage.$group)) {
                 if (gKey === '_id') continue;
