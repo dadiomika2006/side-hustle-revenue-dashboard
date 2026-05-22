@@ -8,12 +8,17 @@ const {
   getRevenueStatus,
   getTopClients,
   getAdminOverview,
-  getIncomeStreamAnalytics
+  getIncomeStreamAnalytics,
+  injectMockData
 } = require('../controllers/dashboardController');
 const requireAdmin = require('../middleware/admin');
 
 // All dashboard routes are protected
 router.use(auth);
+
+// @route   POST /api/dashboard/inject-mock-data
+// @desc    Inject high-end mock data for developer demo and charts visualization
+router.post('/inject-mock-data', injectMockData);
 
 // @route   GET /api/dashboard/stats
 // @desc    Get overall dashboard statistics

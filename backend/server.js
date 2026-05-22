@@ -2,7 +2,20 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 require('dotenv').config();
+
+// Hijack require for mongoose if running in local database fallback mode
+const Module = require('module');
+const originalRequire = Module.prototype.require;
+const path = require('path');
+Module.prototype.require = function (id) {
+  if (id === 'mongoose' && process.env.USE_LOCAL_DB === 'true') {
+    return originalRequire.call(this, path.join(__dirname, 'utils', 'mockMongoose'));
+  }
+  return originalRequire.apply(this, arguments);
+};
+
 const mongoose = require('mongoose');
+
 
 // Initialize app
 const app = express();
@@ -102,23 +115,51 @@ process.on('unhandledRejection', (reason, promise) => {
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('MongoDB connected ✅');
-    const server = app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT} 🚀`);
-    });
+if (process.env.USE_LOCAL_DB === 'true') {
+  mongoose.connect()
+    .then(() => {
+      console.log('==================================================');
+      console.log('🚀 SIDE HUSTLE REVENUE DASHBOARD — OFFLINE LOCAL MODE');
+      console.log('📂 Database: Local File System (backend/local_db.json)');
+      console.log('🔐 Email OTP: Mock console logger enabled');
+      console.log('==================================================');
+      
+      const server = app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT} in Local Mode 🚀`);
+      });
 
-    server.on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        console.error(`Port ${PORT} is already in use. Please kill the other process or use a different port.`);
-      } else {
-        console.error('Server error:', err);
-      }
+      server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          console.error(`Port ${PORT} is already in use. Please kill the other process or use a different port.`);
+        } else {
+          console.error('Server error:', err);
+        }
+        process.exit(1);
+      });
+    });
+} else {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+      console.log('MongoDB connected ✅');
+      const server = app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT} 🚀`);
+      });
+
+      server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+          console.error(`Port ${PORT} is already in use. Please kill the other process or use a different port.`);
+        } else {
+          console.error('Server error:', err);
+        }
+        process.exit(1);
+      });
+    })
+    .catch(err => {
+      console.error('==================================================');
+      console.error('❌ MONGODB CONNECTION ERROR:', err.message);
+      console.error('💡 TIP: To run the server in Offline/Local Mode without a running MongoDB,');
+      console.error('   please set USE_LOCAL_DB=true in your backend .env file.');
+      console.error('==================================================');
       process.exit(1);
     });
-  })
-  .catch(err => {
-    console.error('MongoDB connection error:', err.message);
-    process.exit(1);
-  });
+}

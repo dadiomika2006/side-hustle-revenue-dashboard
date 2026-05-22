@@ -39,9 +39,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/auth/register', credentials);
       const { token: newToken, user: newUser } = response.data;
-      localStorage.setItem('token', newToken);
-      setToken(newToken);
-      setUser(newUser);
+      if (newToken && newUser) {
+        localStorage.setItem('token', newToken);
+        setToken(newToken);
+        setUser(newUser);
+      }
       setError(null);
       return response.data;
     } catch (err) {

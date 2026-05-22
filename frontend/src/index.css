@@ -410,6 +410,74 @@ tbody tr:hover {
   box-shadow: 0 8px 28px rgba(0,0,0,0.35);
 }
 
+/* ── Premium Styling Tokens ──────────────────────────────────── */
+.card-premium {
+  background: rgba(26, 26, 46, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.card-premium:hover {
+  background: rgba(26, 26, 46, 0.6);
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.22);
+  transform: translateY(-4px) scale(1.005);
+}
+
+.text-gradient-indigo {
+  background: linear-gradient(135deg, #c7d2fe 0%, #6366f1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #a7f3d0 0%, #10b981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-amber {
+  background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-indigo {
+  animation: pulseGlow 3s infinite;
+}
+
+.hover-row {
+  transition: all 0.2s ease;
+}
+.hover-row:hover {
+  transform: translateX(4px);
+  background: rgba(99, 102, 241, 0.07) !important;
+}
+
+/* Custom interactive tab transition style */
+.tab-premium {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+}
+.tab-premium:hover {
+  background: rgba(99, 102, 241, 0.1);
+  transform: translateY(-1px);
+}
+
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .main-content {

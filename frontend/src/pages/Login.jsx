@@ -37,7 +37,13 @@ const Login = () => {
       await login({ email: formData.email, password: formData.password });
       navigate('/dashboard');
     } catch (err) {
-      setError(getErrorMessage(err));
+      if (err.response && err.response.data && err.response.data.isVerified === false) {
+        const emailVal = err.response.data.email || formData.email;
+        const msgVal = err.response.data.msg || '';
+        navigate(`/verify-email?email=${encodeURIComponent(emailVal)}&msg=${encodeURIComponent(msgVal)}`);
+      } else {
+        setError(getErrorMessage(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -173,6 +179,15 @@ const Login = () => {
                   {showPassword ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
                 </button>
               </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px', marginBottom: '16px' }}>
+              <Link to="/forgot-password" style={{ color: '#6366f1', fontSize: '13px', fontWeight: 500, textDecoration: 'none' }}
+                onMouseEnter={(e) => e.target.style.color = '#818cf8'}
+                onMouseLeave={(e) => e.target.style.color = '#6366f1'}
+              >
+                Forgot Password or Secure OTP Login?
+              </Link>
             </div>
 
             <button

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { MdPerson, MdEmail, MdBusiness, MdLock } from 'react-icons/md';
+import api from '../services/api';
 
 const Settings = () => {
   const { user, logout, updateProfile } = useAuth();
@@ -15,6 +16,7 @@ const Settings = () => {
   });
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  const [isLocalMode, setIsLocalMode] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -28,6 +30,14 @@ const Settings = () => {
       }));
     }
   }, [user]);
+
+  useEffect(() => {
+    api.get('/dashboard/stats')
+      .then(res => {
+        setIsLocalMode(res.data.isLocalMode || false);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -175,12 +185,22 @@ const Settings = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div className="card">
             <h2 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '16px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>App Info</h2>
-            {[['Version', '1.0.0'], ['Backend', 'Express + MongoDB'], ['Frontend', 'React + Vite']].map(([k, v]) => (
+            {[['Version', '1.0.0'], ['Backend', isLocalMode ? 'Mock Mongoose (Offline)' : 'Express + MongoDB'], ['Frontend', 'React + Vite']].map(([k, v]) => (
               <div key={k} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid rgba(99,102,241,0.06)' }}>
                 <span style={{ color: '#94a3b8', fontSize: '14px' }}>{k}</span>
                 <span style={{ color: '#e2e8f0', fontSize: '14px', fontWeight: 600 }}>{v}</span>
               </div>
             ))}
+            {isLocalMode && (
+              <div style={{ marginTop: '16px', padding: '14px', borderRadius: '10px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#10b981', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <span>💾 Offline Local Database Engaged</span>
+                </div>
+                <p style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.4' }}>
+                  Your sandbox environment is writing data locally to <code style={{ background: 'rgba(255,255,255,0.08)', padding: '2px 4px', borderRadius: '4px', color: '#a5b4fc' }}>backend/local_db.json</code>.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="card" style={{ borderColor: 'rgba(239,68,68,0.2)' }}>

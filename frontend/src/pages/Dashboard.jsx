@@ -22,6 +22,9 @@ const Dashboard = () => {
     const [newReminderTitle, setNewReminderTitle] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [isLocalMode, setIsLocalMode] = useState(false);
+    const [injecting, setInjecting] = useState(false);
+    const [injectSuccess, setInjectSuccess] = useState('');
 
     const load = useCallback(async (showLoader = false) => {
         if (showLoader) setLoading(true);
@@ -36,6 +39,7 @@ const Dashboard = () => {
 
             setStats(statsRes.data.stats || statsRes.data);
             setRecentTx(statsRes.data.recentTransactions || []);
+            setIsLocalMode(statsRes.data.isLocalMode || false);
             setMonthlyData(monthlyRes.data);
             
             // Map side hustle analytics to pieData
@@ -58,6 +62,25 @@ const Dashboard = () => {
             if (showLoader) setLoading(false);
         }
     }, []);
+
+    const handleInjectDemoData = async () => {
+        setInjecting(true);
+        setInjectSuccess('');
+        setError('');
+        try {
+            const res = await api.post('/dashboard/inject-mock-data');
+            setInjectSuccess(res.data.msg || '✓ Realistic Demo Data Injected Successfully!');
+            // Re-load all dashboard data
+            await load(false);
+            // Hide the success message after 4 seconds
+            setTimeout(() => setInjectSuccess(''), 4000);
+        } catch (err) {
+            console.error('Error injecting mock data:', err);
+            setError(err.response?.data?.msg || 'Failed to inject realistic demo data.');
+        } finally {
+            setInjecting(false);
+        }
+    };
 
     useEffect(() => {
         load(true);
@@ -162,6 +185,87 @@ const Dashboard = () => {
                     </Link>
                 </div>
             </div>
+
+            {/* Local Offline Sandbox Mode Banner */}
+            {isLocalMode && (
+                <div className="card-glass animate-slide-down" style={{
+                    marginBottom: '28px',
+                    background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                    border: '1px solid rgba(99, 102, 241, 0.25)',
+                    padding: '20px 24px',
+                    borderRadius: '16px',
+                    boxShadow: 'var(--shadow-card), 0 0 25px rgba(99, 102, 241, 0.1)',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '16px'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: '280px' }}>
+                        <div style={{
+                            width: '48px', height: '48px', borderRadius: '12px',
+                            background: 'rgba(99, 102, 241, 0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '24px', color: '#8b5cf6',
+                            border: '1px solid rgba(99, 102, 241, 0.25)'
+                        }}>
+                            💾
+                        </div>
+                        <div>
+                            <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                Local Developer Sandbox Mode
+                                <span style={{
+                                    fontSize: '10px', fontWeight: 800, textTransform: 'uppercase',
+                                    background: '#10b981', color: '#ffffff', padding: '3px 8px',
+                                    borderRadius: '99px', letterSpacing: '0.05em'
+                                }}>
+                                    Active
+                                </span>
+                            </h3>
+                            <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
+                                App is running offline. Data is securely persisted in your workspace at <code style={{ background: 'rgba(255, 255, 255, 0.08)', padding: '2px 6px', borderRadius: '4px', color: '#a5b4fc', fontSize: '12px' }}>backend/local_db.json</code>.
+                            </p>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        {injectSuccess ? (
+                            <span style={{
+                                fontSize: '13px', fontWeight: 700, color: '#10b981',
+                                background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)',
+                                padding: '8px 16px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px',
+                                animation: 'pulse 2s infinite'
+                            }}>
+                                {injectSuccess}
+                            </span>
+                        ) : (
+                            <button
+                                type="button"
+                                disabled={injecting}
+                                onClick={handleInjectDemoData}
+                                className="btn btn-primary"
+                                style={{
+                                    background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+                                    border: 'none',
+                                    boxShadow: '0 4px 15px rgba(139, 92, 246, 0.35)',
+                                    fontWeight: 700,
+                                    fontSize: '13px',
+                                    padding: '10px 18px',
+                                    borderRadius: '10px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s ease',
+                                    display: 'flex', alignItems: 'center', gap: '8px'
+                                }}
+                            >
+                                {injecting ? (
+                                    <>⏳ Seeding Sandbox...</>
+                                ) : (
+                                    <>⚡ Inject Realistic Demo Data</>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {error && <div className="alert alert-error">{error}</div>}
 

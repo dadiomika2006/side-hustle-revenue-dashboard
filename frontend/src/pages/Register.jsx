@@ -22,23 +22,25 @@ const Register = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (formData.password.length < 6) {
-    setError('Password must be at least 6 characters.');
-    return;
-  }
+    e.preventDefault();
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
 
-  setLoading(true);
-  setError('');
-  try {
-    await register(formData);
-    navigate('/dashboard');
-  } catch (err) {
-    setError(err.response?.data?.errors?.[0]?.msg || err.response?.data?.msg || 'Registration failed.');
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setError('');
+    try {
+      const res = await register(formData);
+      const emailVal = res?.email || formData.email;
+      const msgVal = res?.msg || 'Registration successful. Please verify your email.';
+      navigate(`/verify-email?email=${encodeURIComponent(emailVal)}&msg=${encodeURIComponent(msgVal)}`);
+    } catch (err) {
+      setError(err.response?.data?.errors?.[0]?.msg || err.response?.data?.msg || 'Registration failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 50%,#16213e 100%)', padding:'40px 20px' }}>
