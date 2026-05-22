@@ -9,7 +9,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = async ({ to, subject, html }) => {
-  if (process.env.USE_LOCAL_DB === 'true') {
+  if (process.env.USE_LOCAL_DB === 'true' && process.env.SEND_REAL_EMAILS !== 'true') {
     console.log('\n==================================================');
     console.log(`📧  OFFLINE EMAIL EMULATOR`);
     console.log(`TO:      ${to}`);
