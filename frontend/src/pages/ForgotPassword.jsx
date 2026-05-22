@@ -452,6 +452,39 @@ const ForgotPassword = () => {
             </button>
           </form>
         )}
+
+        {/* Developer Sandbox Bypass Hint */}
+        {(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+          <div style={{
+            marginTop: '24px',
+            background: 'rgba(99, 102, 241, 0.05)',
+            border: '1px dashed rgba(99, 102, 241, 0.25)',
+            borderRadius: '16px',
+            padding: '16px',
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'flex-start',
+            textAlign: 'left'
+          }}>
+            <span style={{ fontSize: '20px', lineHeight: 1 }}>💡</span>
+            <div>
+              <strong style={{ color: '#a5b4fc', display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '4px' }}>
+                Developer Sandbox Active
+              </strong>
+              <p style={{ color: '#94a3b8', fontSize: '12px', lineHeight: 1.5, margin: 0 }}>
+                You can use the master bypass code <code style={{
+                  background: 'rgba(99, 102, 241, 0.15)',
+                  color: '#fff',
+                  padding: '2px 6px',
+                  borderRadius: '6px',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  border: '1px solid rgba(99, 102, 241, 0.3)'
+                }}>123456</code> for both OTP recovery and password reset verification, or inspect the backend terminal console.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`
