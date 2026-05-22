@@ -278,6 +278,14 @@ const mockMongoose = {
         }
         this.updatedAt = new Date().toISOString();
       }
+
+      isModified(path) {
+        if (path === 'password' && this.password) {
+          // If the password starts with standard bcrypt hash prefixes, it's already hashed
+          return !this.password.startsWith('$2a$') && !this.password.startsWith('$2b$');
+        }
+        return true;
+      }
       
       async save() {
         // Run pre-save hooks (like password hashing)
