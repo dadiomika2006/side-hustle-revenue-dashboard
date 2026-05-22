@@ -264,8 +264,7 @@ const verifyEmail = async (req, res) => {
       return res.status(400).json({ msg: 'Email is already verified' });
     }
 
-    const isLocalBypass = process.env.USE_LOCAL_DB === 'true' && code === '123456';
-    if (!isLocalBypass && (user.verificationCode !== code || user.verificationCodeExpires < new Date())) {
+    if (user.verificationCode !== code || user.verificationCodeExpires < new Date()) {
       return res.status(400).json({ msg: 'Invalid or expired verification code' });
     }
 
@@ -373,8 +372,7 @@ const resetPassword = async (req, res) => {
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    const isLocalBypass = process.env.USE_LOCAL_DB === 'true' && code === '123456';
-    if (!isLocalBypass && (user.resetCode !== code || user.resetCodeExpires < new Date())) {
+    if (user.resetCode !== code || user.resetCodeExpires < new Date()) {
       return res.status(400).json({ msg: 'Invalid or expired reset code' });
     }
 
@@ -433,8 +431,7 @@ const otpLoginVerify = async (req, res) => {
       return res.status(404).json({ msg: 'User not found' });
     }
 
-    const isLocalBypass = process.env.USE_LOCAL_DB === 'true' && code === '123456';
-    if (!isLocalBypass && (user.resetCode !== code || user.resetCodeExpires < new Date())) {
+    if (user.resetCode !== code || user.resetCodeExpires < new Date()) {
       return res.status(400).json({ msg: 'Invalid or expired login code' });
     }
 
