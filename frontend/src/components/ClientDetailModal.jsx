@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiEdit2 } from 'react-icons/fi';
+import { MdClose, MdSave } from 'react-icons/md';
 import api from '../services/api';
 
 const ClientDetailModal = ({ client, isOpen, onClose, onSave }) => {
@@ -252,7 +253,7 @@ const ClientDetailModal = ({ client, isOpen, onClose, onSave }) => {
                 fontSize: '13px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px'
               }}
             >
-              <MdEdit2 size={14} /> Edit
+              <FiEdit2 size={14} /> Edit
             </button>
           ) : (
             <button
