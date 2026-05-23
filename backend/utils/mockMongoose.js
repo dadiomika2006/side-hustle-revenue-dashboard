@@ -319,8 +319,8 @@ const mockMongoose = {
       async save() {
         // Run pre-save hooks (like password hashing)
         if (schema && schema._pres && typeof schema._pres['save'] === 'function') {
-          // Binding this to instance
-          await schema._pres['save'].call(this);
+          // Binding this to instance, passing a dummy next callback to avoid TypeError
+          await schema._pres['save'].call(this, () => {});
         }
         
         const db = readDB();

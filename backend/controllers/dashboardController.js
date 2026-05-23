@@ -8,6 +8,8 @@ const Receipt = require('../models/Receipt');
 const RecurringTransaction = require('../models/RecurringTransaction');
 const Mileage = require('../models/Mileage');
 const TaxBucket = require('../models/TaxBucket');
+const Reminder = require('../models/Reminder');
+const IncomeStream = require('../models/IncomeStream');
 
 // @desc    Get dashboard stats
 // @route   GET /api/dashboard/stats
@@ -422,7 +424,6 @@ const injectMockData = async (req, res) => {
         ]);
         
         // 1. Create Tax Bucket
-        const TaxBucket = require('../models/TaxBucket');
         await TaxBucket.create({
             user: userId,
             name: 'Federal & State Savings',
@@ -433,7 +434,6 @@ const injectMockData = async (req, res) => {
         });
 
         // 2. Create Custom Income Streams
-        const IncomeStream = require('../models/IncomeStream');
         const streamEtsy = await IncomeStream.create({
             user: userId,
             name: 'Etsy Handcrafted Shop',
@@ -484,7 +484,6 @@ const injectMockData = async (req, res) => {
         });
 
         // 4. Create Goals
-        const Goal = require('../models/Goal');
         await Goal.create({
             user: userId,
             title: 'Q2 Side Hustle Milestone',
@@ -496,7 +495,6 @@ const injectMockData = async (req, res) => {
         });
 
         // 5. Create Mileage Logs
-        const Mileage = require('../models/Mileage');
         await Mileage.create([
             {
                 user: userId,
@@ -517,7 +515,6 @@ const injectMockData = async (req, res) => {
         ]);
 
         // 6. Create Reminders
-        const Reminder = require('../models/Reminder');
         await Reminder.create([
             {
                 user: userId,
