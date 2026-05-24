@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const Receipt = require('../models/Receipt');
+const Transaction = require('../models/Transaction');
+const Invoice = require('../models/Invoice');
 
 exports.uploadReceipt = async (req, res) => {
   try {
@@ -20,7 +22,7 @@ exports.uploadReceipt = async (req, res) => {
     res.json({ msg: 'Uploaded', receipt });
   } catch (err) {
     console.error('uploadReceipt error', err);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: 'Server error', error: err.message, stack: err.stack });
   }
 };
 
