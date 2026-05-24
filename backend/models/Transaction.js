@@ -83,7 +83,7 @@ const TransactionSchema = new mongoose.Schema({
   toObject: { getters: true }
 });
 
-TransactionSchema.pre('save', async function(next) {
+TransactionSchema.pre('save', async function() {
   if (this.isModified('amount') || this.isModified('currency') || !this.baseAmount) {
     try {
       const User = mongoose.model('User');
@@ -97,7 +97,6 @@ TransactionSchema.pre('save', async function(next) {
       this.baseAmount = this.amount;
     }
   }
-  next();
 });
 
 module.exports = mongoose.model('Transaction', TransactionSchema);
