@@ -48,40 +48,39 @@ exports.exportCSV = async (req, res) => {
 // Basic Schedule C exporter: sums by tax-deductible categories and maps to Schedule C lines
 const scheduleCMap = {
   'Advertising': 'Advertising',
-  'Car and truck expenses': 'Car and truck expenses',
-  'Commissions and fees': 'Commissions and fees',
-  'Contract labor': 'Contract labor',
-  'Depreciation': 'Depreciation',
+  'Car & Truck Expenses': 'Car & Truck Expenses',
+  'Commissions & Fees': 'Commissions & Fees',
+  'Contract Labor': 'Contract labor',
   'Insurance': 'Insurance',
-  'Interest': 'Interest',
-  'Legal and professional services': 'Legal and professional services',
-  'Office expense': 'Office expense',
-  'Rent': 'Rent',
-  'Repairs and maintenance': 'Repairs and maintenance',
+  'Legal & Professional Services': 'Legal & Professional Services',
+  'Office Expense': 'Office Expense',
+  'Rent or Lease (Vehicles/Real Estate)': 'Rent or Lease (Vehicles/Real Estate)',
+  'Repairs & Maintenance': 'Repairs & Maintenance',
   'Supplies': 'Supplies',
-  'Taxes and licenses': 'Taxes and licenses',
-  'Travel': 'Travel',
-  'Meals': 'Meals',
+  'Taxes & Licenses': 'Taxes & Licenses',
+  'Travel & Meals': 'Travel & Meals',
   'Utilities': 'Utilities',
-  'Other': 'Other'
+  'Other Business Expenses': 'Other Business Expenses'
 };
 
 exports.exportScheduleC = async (req, res) => {
   try {
     const { year } = req.query;
-    const start = year ? new Date(`${year}-01-01`) : new Date(new Date().getFullYear(),0,1);
+    const start = year ? new Date(`${year}-01-01`) : new Date(new Date().getFullYear(), 0, 1);
     const end = year ? new Date(`${year}-12-31T23:59:59.999Z`) : new Date();
     const txs = await Transaction.find({ user: req.user.id, date: { $gte: start, $lte: end } });
 
-    // Group expenses by category
+    // Group expenses by taxCategory
     const totals = {};
     txs.forEach(t => {
-      const cat = t.category || 'Other';
-      if (!totals[cat]) totals[cat] = 0;
-      if (t.type === 'expense') totals[cat] += t.amount;
+      if (t.type === 'expense') {
+        const cat = t.taxCategory || 'Other Business Expenses';
+        if (!totals[cat]) totals[cat] = 0;
+        totals[cat] += t.amount;
+      }
     });
 
-    const header = ['Schedule C Category','Total'];
+    const header = ['Schedule C Category', 'Total'];
     const rows = Object.keys(scheduleCMap).map(k => [scheduleCMap[k], (totals[k] || 0).toFixed(2)].map(escapeCsv).join(','));
 
     const csv = [header.join(','), ...rows].join('\n');
