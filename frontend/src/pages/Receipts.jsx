@@ -49,7 +49,8 @@ export default function Receipts() {
     } catch (err) {
       console.error(err);
       setIsSuccess(false);
-      setMessage('Failed to upload receipt. Supported formats: Images, PDF (Max 5MB).');
+      const serverMsg = err.response?.data?.msg || err.response?.data?.message;
+      setMessage(serverMsg || 'Failed to upload receipt. Supported formats: PNG, JPG, PDF, CSV (Max 8MB).');
     } finally {
       setLoading(false);
     }
@@ -114,7 +115,7 @@ export default function Receipts() {
                   {file ? file.name : 'Choose receipt file'}
                 </div>
                 <div style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                  {file ? `${Math.round(file.size / 1024)} KB` : 'Supports PNG, JPG, PDF up to 5MB'}
+                  {file ? `${Math.round(file.size / 1024)} KB` : 'Supports PNG, JPG, PDF, CSV up to 8MB'}
                 </div>
               </div>
             </div>

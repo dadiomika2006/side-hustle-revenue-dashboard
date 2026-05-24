@@ -276,6 +276,10 @@ const mockMongoose = {
     if (name === 'RecurringTransaction') collectionName = 'recurringtransactions';
     if (name === 'Mileage') collectionName = 'mileagelogs';
     
+    if (registeredModels[collectionName]) {
+      return registeredModels[collectionName];
+    }
+    
     class Model {
       constructor(data) {
         Object.assign(this, data);
@@ -383,6 +387,30 @@ const mockMongoose = {
     Model.findById = function(id) {
       const idStr = id ? id.toString() : '';
       return new MockQuery(collectionName, { _id: idStr }, 'one');
+    };
+
+    Model.populate = async function(docs, paths) {
+      if (!docs) return docs;
+      const isArray = Array.isArray(docs);
+      const docList = isArray ? docs : [docs];
+      const db = readDB();
+      const popPaths = Array.isArray(paths) ? paths : [paths];
+      
+      for (const doc of docList) {
+        for (const pop of popPaths) {
+          let pathName = typeof pop === 'string' ? pop : pop.path;
+          let foreignColName = pathName.toLowerCase() + 's';
+          if (pathName === 'incomeStream') foreignColName = 'incomestreams';
+          const foreignData = db[foreignColName] || [];
+          
+          const idToFind = doc[pathName];
+          if (idToFind) {
+            const found = foreignData.find(x => x._id === idToFind.toString());
+            doc[pathName] = found ? { ...found, id: found._id } : idToFind;
+          }
+        }
+      }
+      return isArray ? docList : docList[0];
     };
     
     Model.create = async function(doc) {

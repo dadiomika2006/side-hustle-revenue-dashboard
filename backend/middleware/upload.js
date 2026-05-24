@@ -19,10 +19,10 @@ const storage = multer.diskStorage({
 });
 
 function fileFilter(req, file, cb) {
-  const allowed = ['.png', '.jpg', '.jpeg', '.gif', '.pdf'];
+  const allowed = ['.png', '.jpg', '.jpeg', '.gif', '.pdf', '.csv'];
   const ext = path.extname(file.originalname).toLowerCase();
   if (allowed.includes(ext)) return cb(null, true);
-  cb(new Error('Only images and PDFs are allowed'));
+  cb(new Error('Only images, PDFs, and CSV spreadsheets are allowed'));
 }
 
 const upload = multer({

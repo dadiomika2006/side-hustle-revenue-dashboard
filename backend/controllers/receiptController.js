@@ -22,7 +22,7 @@ exports.uploadReceipt = async (req, res) => {
     res.json({ msg: 'Uploaded', receipt });
   } catch (err) {
     console.error('uploadReceipt error', err);
-    res.status(500).json({ msg: 'Server error', error: err.message, stack: err.stack });
+    res.status(500).json({ msg: 'Server error' });
   }
 };
 
