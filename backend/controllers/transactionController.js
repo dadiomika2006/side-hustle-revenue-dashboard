@@ -117,7 +117,7 @@ const createTransaction = async (req, res) => {
     if (err.name === 'CastError') {
       return res.status(400).json({ msg: `Invalid field format for ${err.path}` });
     }
-    res.status(500).json({ msg: 'Server error', error: err.message, stack: err.stack });
+    res.status(500).json({ msg: 'Server error' });
   }
 };
 

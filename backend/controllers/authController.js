@@ -26,7 +26,7 @@ const register = async (req, res) => {
       email: email.toLowerCase(),
       password,
       businessName,
-      isVerified: email.toLowerCase().endsWith('@diagnostics.com') ? true : false,
+      isVerified: false,
       verificationCode,
       verificationCodeExpires
     });
@@ -35,9 +35,7 @@ const register = async (req, res) => {
 
     // Send verification email
     try {
-      if (!email.toLowerCase().endsWith('@diagnostics.com')) {
-        await sendVerificationEmail(user.email, user.name, verificationCode);
-      }
+      await sendVerificationEmail(user.email, user.name, verificationCode);
     } catch (mailErr) {
       console.error('Failed to send verification email upon registration:', mailErr);
       // We still registered them, they can request a resend later
