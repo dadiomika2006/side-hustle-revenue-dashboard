@@ -3,7 +3,9 @@ const Transaction = require('../models/Transaction');
 const Client = require('../models/Client');
 const IncomeStream = require('../models/IncomeStream');
 const Receipt = require('../models/Receipt');
+const Invoice = require('../models/Invoice');
 const { validationResult } = require('express-validator');
+
 
 // @desc    Get all transactions for logged in user
 // @route   GET /api/transactions
