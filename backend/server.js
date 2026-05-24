@@ -88,7 +88,13 @@ require('./scheduler/recurringJob');
 
 // Health check
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', msg: 'Side Hustle Revenue Dashboard API is running 🚀' });
+  res.json({ 
+    status: 'ok', 
+    msg: 'Side Hustle Revenue Dashboard API is running 🚀',
+    version: '1.0.4',
+    deployedAt: '2026-05-24T13:22:00Z',
+    databaseMode: process.env.USE_LOCAL_DB === 'true' ? 'Local File' : 'MongoDB Atlas'
+  });
 });
 
 // 404 handler
