@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { encrypt, decrypt } = require('../utils/encryption');
 const { getExchangeRate } = require('../utils/exchangeRates');
+require('./User');
+
 
 const TransactionSchema = new mongoose.Schema({
   user: {
