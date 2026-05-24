@@ -101,11 +101,11 @@ const createTransaction = async (req, res) => {
     });
 
     const transaction = await newTransaction.save();
-    await transaction.populate([
+    const populatedTransaction = await Transaction.populate(transaction, [
       { path: 'client', select: 'name' },
       { path: 'incomeStream', select: 'name color' }
     ]);
-    res.status(201).json(transaction);
+    res.status(201).json(populatedTransaction);
   } catch (err) {
     console.error(err);
     if (err.name === 'ValidationError') {
