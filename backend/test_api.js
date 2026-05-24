@@ -133,6 +133,35 @@ async function runTests() {
     console.log(`✅ Transactions summary computed: Balance: $${summaryRes.data.balance}, Savings Rate: ${summaryRes.data.savingsRate}%`);
 
     // ----------------------------------------------------
+    // TEST 8b: Create an Income Transaction via API
+    // ----------------------------------------------------
+    console.log('\nTest 8b: Creating an Income Transaction via API...');
+    const newIncomeRes = await axios.post(`${API_URL}/transactions`, {
+      type: 'income',
+      amount: 450,
+      description: 'E2E Testing Income',
+      date: new Date().toISOString(),
+      category: 'freelance',
+      paymentMethod: 'bank'
+    }, config);
+    console.log(`✅ Income transaction created successfully. ID: ${newIncomeRes.data._id}, Amount: $${newIncomeRes.data.amount}`);
+
+    // ----------------------------------------------------
+    // TEST 8c: Create an Expense Transaction via API
+    // ----------------------------------------------------
+    console.log('\nTest 8c: Creating an Expense Transaction via API...');
+    const newExpenseRes = await axios.post(`${API_URL}/transactions`, {
+      type: 'expense',
+      amount: 120,
+      description: 'E2E Testing Expense',
+      date: new Date().toISOString(),
+      category: 'rent',
+      paymentMethod: 'card',
+      taxCategory: 'Rent or Lease (Vehicles/Real Estate)'
+    }, config);
+    console.log(`✅ Expense transaction created successfully. ID: ${newExpenseRes.data._id}, Amount: $${newExpenseRes.data.amount}`);
+
+    // ----------------------------------------------------
     // TEST 9: Goals & Progress Tracking
     // ----------------------------------------------------
     console.log('\nTest 9: Testing recurring Goals creation and progress milestones...');
