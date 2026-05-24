@@ -108,6 +108,13 @@ const createTransaction = async (req, res) => {
     res.status(201).json(transaction);
   } catch (err) {
     console.error(err);
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({ msg: messages.join(', ') });
+    }
+    if (err.name === 'CastError') {
+      return res.status(400).json({ msg: `Invalid field format for ${err.path}` });
+    }
     res.status(500).json({ msg: 'Server error' });
   }
 };
@@ -175,6 +182,13 @@ const updateTransaction = async (req, res) => {
     res.json(transaction);
   } catch (err) {
     console.error(err);
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({ msg: messages.join(', ') });
+    }
+    if (err.name === 'CastError') {
+      return res.status(400).json({ msg: `Invalid field format for ${err.path}` });
+    }
     res.status(500).json({ msg: 'Server error' });
   }
 };
