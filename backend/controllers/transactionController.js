@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Client = require('../models/Client');
+const IncomeStream = require('../models/IncomeStream');
+const Receipt = require('../models/Receipt');
 const { validationResult } = require('express-validator');
 
 // @desc    Get all transactions for logged in user
@@ -78,7 +80,6 @@ const createTransaction = async (req, res) => {
 
     // Verify incomeStream belongs to user if provided
     if (incomeStream) {
-      const IncomeStream = require('../models/IncomeStream');
       const streamDoc = await IncomeStream.findOne({ _id: incomeStream, user: req.user.id });
       if (!streamDoc) {
         return res.status(404).json({ msg: 'Income Stream not found' });
@@ -138,7 +139,6 @@ const updateTransaction = async (req, res) => {
     }
 
     if (incomeStream) {
-      const IncomeStream = require('../models/IncomeStream');
       const streamDoc = await IncomeStream.findOne({ _id: incomeStream, user: req.user.id });
       if (!streamDoc) {
         return res.status(404).json({ msg: 'Income Stream not found' });
