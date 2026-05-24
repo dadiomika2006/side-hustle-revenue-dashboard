@@ -91,8 +91,8 @@ app.get('/', (req, res) => {
   res.json({ 
     status: 'ok', 
     msg: 'Side Hustle Revenue Dashboard API is running 🚀',
-    version: '1.0.9',
-    deployedAt: '2026-05-24T14:10:00Z',
+    version: '1.1.0',
+    deployedAt: '2026-05-24T14:55:00Z',
     databaseMode: process.env.USE_LOCAL_DB === 'true' ? 'Local File' : 'MongoDB Atlas'
   });
 });
