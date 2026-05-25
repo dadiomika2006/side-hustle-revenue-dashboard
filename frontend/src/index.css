@@ -484,4 +484,10 @@ tbody tr:hover {
     margin-left: 0;
     padding: 80px 16px 20px; /* Accommodate premium mobile top bar! */
   }
+  .dashboard-footer-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .quick-actions-sidebar {
+    display: none !important;
+  }
 }

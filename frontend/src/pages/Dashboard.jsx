@@ -569,7 +569,7 @@ const Dashboard = () => {
             </div>
 
             {/* Recent Transactions + Quick Actions */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr auto', gap:'20px' }}>
+            <div className="dashboard-footer-grid" style={{ display:'grid', gridTemplateColumns:'1fr auto', gap:'20px' }}>
                 {/* Recent Transactions */}
                 <div className="card">
                     <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
@@ -604,7 +604,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Quick Actions */}
-                <div style={{ display:'flex', flexDirection:'column', gap:'12px', minWidth:'180px' }}>
+                <div className="quick-actions-sidebar" style={{ display:'flex', flexDirection:'column', gap:'12px', minWidth:'180px' }}>
                     <div style={{ fontSize:'13px', fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'4px' }}>Quick Actions</div>
                     {[
                         { to:'/create-invoices', icon:'🧾', label:'New Invoice', color:'#6366f1' },
