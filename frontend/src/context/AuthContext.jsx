@@ -22,6 +22,9 @@ export const AuthProvider = ({ children }) => {
           setToken(null);
           setUser(null);
         }
+      } else {
+        // Pre-warm the backend server immediately on landing page load if logged out
+        api.get('/auth/me').catch(() => {});
       }
       setLoading(false);
     };

@@ -27,11 +27,92 @@ import Navbar from './components/Navbar.jsx';
 
 const PrivateRoute = ({ children }) => {
   const { token, loading } = useAuth();
+  const [showWarmupMsg, setShowWarmupMsg] = React.useState(false);
+
+  React.useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setShowWarmupMsg(true);
+      }, 2500);
+      return () => clearTimeout(timer);
+    } else {
+      setShowWarmupMsg(false);
+    }
+  }, [loading]);
+
   if (loading) {
     return (
-      <div className="loading-spinner" style={{ height: '100vh' }}>
-        <div className="spinner" />
-        <span>Loading...</span>
+      <div style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0f0f1a',
+        color: '#e2e8f0',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        padding: '20px',
+        textAlign: 'center'
+      }}>
+        {/* Sleek Gradient Spinner */}
+        <div style={{
+          width: '50px',
+          height: '50px',
+          borderRadius: '50%',
+          border: '3px solid rgba(99, 102, 241, 0.1)',
+          borderTop: '3px solid #6366f1',
+          animation: 'spin 1s linear infinite',
+          marginBottom: '20px'
+        }} />
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+        
+        <span style={{ fontWeight: 600, fontSize: '15px', color: '#e2e8f0' }}>
+          Loading your SideHustle Space...
+        </span>
+
+        {showWarmupMsg && (
+          <div style={{
+            maxWidth: '400px',
+            marginTop: '24px',
+            padding: '24px',
+            borderRadius: '16px',
+            background: 'rgba(30, 41, 59, 0.4)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(99, 102, 241, 0.2)',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4)',
+            animation: 'fadeIn 0.6s ease-out',
+            textAlign: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '12px' }}>
+              <span style={{ fontSize: '20px' }}>☁️</span>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#e2e8f0', margin: 0 }}>Waking Up Cloud Server</h3>
+            </div>
+            <p style={{ color: '#94a3b8', fontSize: '13px', lineHeight: 1.6, margin: '0 0 16px 0' }}>
+              Our secure MERN database server is currently spinning up from power-saving sleep mode. This first launch takes about 30–50 seconds.
+            </p>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              color: '#a5b4fc',
+              background: 'rgba(99, 102, 241, 0.15)',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              display: 'inline-block',
+              border: '1px solid rgba(99, 102, 241, 0.1)'
+            }}>
+              💡 PRO-TIP: Keep this tab open; once loaded, it stays hot!
+            </div>
+          </div>
+        )}
       </div>
     );
   }
