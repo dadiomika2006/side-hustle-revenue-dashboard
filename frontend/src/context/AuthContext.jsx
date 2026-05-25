@@ -23,8 +23,11 @@ export const AuthProvider = ({ children }) => {
           setUser(null);
         }
       } else {
-        // Pre-warm the backend server immediately on landing page load if logged out
-        api.get('/auth/me').catch(() => {});
+        // Pre-warm the backend server immediately on landing page load if logged out by hitting public health check
+        const cleanBase = api.defaults.baseURL ? api.defaults.baseURL.replace(/\/api\/?$/, '') : '';
+        if (cleanBase) {
+          fetch(cleanBase).catch(() => {});
+        }
       }
       setLoading(false);
     };

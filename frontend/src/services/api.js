@@ -36,7 +36,10 @@ api.interceptors.response.use(
     // Handle unauthorized access
     if (error.response && error.response.status === 401) {
       localStorage.removeItem('token');
-      window.location = '/login';
+      const path = window.location.pathname;
+      if (path !== '/login' && path !== '/register' && path !== '/verify-email' && path !== '/forgot-password') {
+        window.location = '/login';
+      }
     }
     return Promise.reject(error);
   }
