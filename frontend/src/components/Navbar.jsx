@@ -1,10 +1,10 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import {
   MdDashboard, MdSwapHoriz, MdPeople, MdReceipt, MdAddBox,
   MdBarChart, MdAssessment, MdSettings, MdLogout, MdCalculate,
-  MdTrendingUp, MdInventory, MdShield
+  MdTrendingUp, MdInventory, MdShield, MdMenu, MdClose
 } from 'react-icons/md';
 
 const baseNavItems = [
@@ -26,143 +26,268 @@ const baseNavItems = [
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setIsOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Auto-close sidebar on route change (for mobile)
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  // Get current page title for mobile header
+  const getPageTitle = () => {
+    const activeItem = baseNavItems.find(item => item.to === location.pathname);
+    if (activeItem) return activeItem.label;
+    if (location.pathname === '/settings') return 'Settings';
+    if (location.pathname === '/admin') return 'Admin Panel';
+    return 'Dashboard';
+  };
+
   return (
-    <aside style={{
-      position: 'fixed',
-      top: 0, left: 0, bottom: 0,
-      width: '260px',
-      background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
-      borderRight: '1px solid rgba(99,102,241,0.15)',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: 100,
-      boxShadow: '4px 0 24px rgba(0,0,0,0.3)'
-    }}>
-      {/* Logo */}
-      <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid rgba(99,102,241,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '40px', height: '40px',
-            background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
-            borderRadius: '10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '20px', boxShadow: '0 4px 15px rgba(99,102,241,0.4)'
-          }}>💰</div>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '15px', color: '#e2e8f0', lineHeight: 1.2 }}>SideHustle</div>
-            <div style={{ fontSize: '11px', color: '#6366f1', fontWeight: 600, letterSpacing: '0.05em' }}>REVENUE DASHBOARD</div>
-          </div>
-        </div>
-      </div>
-
-      {/* User Info */}
-      {user && (
-        <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(99,102,241,0.1)' }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            padding: '10px 12px',
-            background: 'rgba(99,102,241,0.08)',
-            borderRadius: '10px',
-            border: '1px solid rgba(99,102,241,0.15)'
-          }}>
-            <div style={{
-              width: '32px', height: '32px',
-              background: 'linear-gradient(135deg, #6366f1, #10b981)',
-              borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '13px', fontWeight: 700, color: '#fff', flexShrink: 0
-            }}>
-              {user.name?.charAt(0).toUpperCase()}
-            </div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user.name}
-              </div>
-              <div style={{ fontSize: '11px', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user.email}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav style={{ flex: 1, padding: '12px 12px', overflowY: 'auto' }}>
-        <div style={{ fontSize: '10px', fontWeight: 700, color: '#475569', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 12px 4px' }}>
-          Main Menu
-        </div>
-        {[
-          ...baseNavItems,
-          ...(user?.role === 'admin' ? [{ to: '/admin', label: 'Admin', icon: MdShield }] : [])
-        ].map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            style={({ isActive }) => ({
+    <>
+      {/* Mobile Top Bar */}
+      {isMobile && (
+        <header style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0,
+          height: '60px',
+          background: 'rgba(26, 26, 46, 0.8)',
+          backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(99,102,241,0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 16px',
+          zIndex: 99,
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+        }}>
+          <button 
+            onClick={() => setIsOpen(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#e2e8f0',
+              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              gap: '12px',
-              padding: '11px 12px',
+              justifyContent: 'center',
+              padding: '6px'
+            }}
+          >
+            <MdMenu size={24} />
+          </button>
+          
+          <div style={{ fontWeight: 800, fontSize: '15px', color: '#e2e8f0' }}>
+            {getPageTitle()}
+          </div>
+
+          <div style={{
+            width: '32px',
+            height: '32px',
+            background: 'linear-gradient(135deg, #6366f1, #10b981)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '13px',
+            fontWeight: 700,
+            color: '#fff'
+          }}>
+            {user?.name?.charAt(0).toUpperCase() || 'U'}
+          </div>
+        </header>
+      )}
+
+      {/* Backdrop overlay on mobile */}
+      {isMobile && isOpen && (
+        <div 
+          onClick={() => setIsOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 100,
+            animation: 'fadeIn 0.2s ease-out'
+          }}
+        />
+      )}
+
+      {/* Sidebar navigation */}
+      <aside style={{
+        position: 'fixed',
+        top: 0, 
+        left: 0, 
+        bottom: 0,
+        width: '260px',
+        background: 'linear-gradient(180deg, #1a1a2e 0%, #16213e 100%)',
+        borderRight: '1px solid rgba(99,102,241,0.15)',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 101,
+        boxShadow: '4px 0 24px rgba(0,0,0,0.3)',
+        transform: isMobile ? (isOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+      }}>
+        {/* Logo and Close trigger */}
+        <div style={{ 
+          padding: '24px 24px 20px', 
+          borderBottom: '1px solid rgba(99,102,241,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '40px', height: '40px',
+              background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
               borderRadius: '10px',
-              marginBottom: '2px',
-              textDecoration: 'none',
-              fontSize: '14px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '20px', boxShadow: '0 4px 15px rgba(99,102,241,0.4)'
+            }}>💰</div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '15px', color: '#e2e8f0', lineHeight: 1.2 }}>SideHustle</div>
+              <div style={{ fontSize: '11px', color: '#6366f1', fontWeight: 600, letterSpacing: '0.05em' }}>REVENUE DASHBOARD</div>
+            </div>
+          </div>
+
+          {/* Close button on mobile sidebar top */}
+          {isMobile && (
+            <button 
+              onClick={() => setIsOpen(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#64748b',
+                cursor: 'pointer',
+                padding: '4px'
+              }}
+            >
+              <MdClose size={20} />
+            </button>
+          )}
+        </div>
+
+        {/* User Info */}
+        {user && (
+          <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(99,102,241,0.1)' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '10px 12px',
+              background: 'rgba(99,102,241,0.08)',
+              borderRadius: '10px',
+              border: '1px solid rgba(99,102,241,0.15)'
+            }}>
+              <div style={{
+                width: '32px', height: '32px',
+                background: 'linear-gradient(135deg, #6366f1, #10b981)',
+                borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '13px', fontWeight: 700, color: '#fff', flexShrink: 0
+              }}>
+                {user.name?.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user.name}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {user.email}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav style={{ flex: 1, padding: '12px 12px', overflowY: 'auto' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: '#475569', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 12px 4px' }}>
+            Main Menu
+          </div>
+          {[
+            ...baseNavItems,
+            ...(user?.role === 'admin' ? [{ to: '/admin', label: 'Admin', icon: MdShield }] : [])
+          ].map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              style={({ isActive }) => ({
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '11px 12px',
+                borderRadius: '10px',
+                marginBottom: '2px',
+                textDecoration: 'none',
+                fontSize: '14px',
+                fontWeight: isActive ? 700 : 500,
+                transition: 'all 0.15s ease',
+                background: isActive
+                  ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(79,70,229,0.15))'
+                  : 'transparent',
+                color: isActive ? '#a5b4fc' : '#94a3b8',
+                borderLeft: isActive ? '3px solid #6366f1' : '3px solid transparent',
+              })}
+            >
+              <Icon style={{ fontSize: '18px', flexShrink: 0 }} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Settings & Logout */}
+        <div style={{ padding: '12px 12px 20px', borderTop: '1px solid rgba(99,102,241,0.1)' }}>
+          <NavLink
+            to="/settings"
+            style={({ isActive }) => ({
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '11px 12px', borderRadius: '10px', marginBottom: '4px',
+              textDecoration: 'none', fontSize: '14px',
               fontWeight: isActive ? 700 : 500,
-              transition: 'all 0.15s ease',
-              background: isActive
-                ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(79,70,229,0.15))'
-                : 'transparent',
               color: isActive ? '#a5b4fc' : '#94a3b8',
-              borderLeft: isActive ? '3px solid #6366f1' : '3px solid transparent',
+              background: isActive ? 'rgba(99,102,241,0.15)' : 'transparent',
             })}
           >
-            <Icon style={{ fontSize: '18px', flexShrink: 0 }} />
-            {label}
+            <MdSettings style={{ fontSize: '18px' }} />
+            Settings
           </NavLink>
-        ))}
-      </nav>
-
-      {/* Logout */}
-      <div style={{ padding: '12px 12px 20px', borderTop: '1px solid rgba(99,102,241,0.1)' }}>
-        <NavLink
-          to="/settings"
-          style={({ isActive }) => ({
-            display: 'flex', alignItems: 'center', gap: '12px',
-            padding: '11px 12px', borderRadius: '10px', marginBottom: '4px',
-            textDecoration: 'none', fontSize: '14px',
-            fontWeight: isActive ? 700 : 500,
-            color: isActive ? '#a5b4fc' : '#94a3b8',
-            background: isActive ? 'rgba(99,102,241,0.15)' : 'transparent',
-          })}
-        >
-          <MdSettings style={{ fontSize: '18px' }} />
-          Settings
-        </NavLink>
-        <button
-          onClick={handleLogout}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '12px',
-            padding: '11px 12px', borderRadius: '10px',
-            background: 'rgba(239,68,68,0.08)',
-            border: '1px solid rgba(239,68,68,0.2)',
-            color: '#fca5a5', fontSize: '14px', fontWeight: 600,
-            cursor: 'pointer', width: '100%', transition: 'all 0.15s ease',
-            fontFamily: 'inherit'
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
-        >
-          <MdLogout style={{ fontSize: '18px' }} />
-          Sign Out
-        </button>
-      </div>
-    </aside>
+          <button
+            onClick={handleLogout}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '11px 12px', borderRadius: '10px',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              color: '#fca5a5', fontSize: '14px', fontWeight: 600,
+              cursor: 'pointer', width: '100%', transition: 'all 0.15s ease',
+              fontFamily: 'inherit'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.15)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
+          >
+            <MdLogout style={{ fontSize: '18px' }} />
+            Sign Out
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 

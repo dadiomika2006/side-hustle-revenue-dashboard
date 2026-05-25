@@ -482,6 +482,6 @@ tbody tr:hover {
 @media (max-width: 768px) {
   .main-content {
     margin-left: 0;
-    padding: 20px 16px;
+    padding: 80px 16px 20px; /* Accommodate premium mobile top bar! */
   }
 }
