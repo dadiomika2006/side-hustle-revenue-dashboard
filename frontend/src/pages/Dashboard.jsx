@@ -21,6 +21,7 @@ const Dashboard = () => {
     const [reminders, setReminders] = useState([]);
     const [newReminderTitle, setNewReminderTitle] = useState('');
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState('');
     const [isLocalMode, setIsLocalMode] = useState(false);
     const [injecting, setInjecting] = useState(false);
@@ -28,6 +29,7 @@ const Dashboard = () => {
 
     const load = useCallback(async (showLoader = false) => {
         if (showLoader) setLoading(true);
+        else setRefreshing(true);
         try {
             const [statsRes, monthlyRes, pieRes, goalsRes, remindersRes] = await Promise.all([
                 api.get('/dashboard/stats'),
@@ -60,6 +62,7 @@ const Dashboard = () => {
             setError('Failed to load dashboard data. Make sure the server is running.');
         } finally {
             if (showLoader) setLoading(false);
+            else setRefreshing(false);
         }
     }, []);
 
@@ -172,13 +175,20 @@ const Dashboard = () => {
                 <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
                     <button
                         onClick={() => load(false)}
+                        disabled={refreshing || loading}
                         style={{
                             padding:'8px 14px', borderRadius:'10px', fontSize:'13px', fontWeight:600,
                             background:'rgba(99,102,241,0.12)', border:'1px solid rgba(99,102,241,0.25)',
-                            color:'#a5b4fc', cursor:'pointer', transition:'all 0.15s ease'
+                            color:'#a5b4fc', cursor: (refreshing || loading) ? 'not-allowed' : 'pointer', 
+                            transition:'all 0.15s ease',
+                            display: 'flex', alignItems: 'center', gap: '6px'
                         }}
                     >
-                        🔄 Refresh
+                        <span style={{ 
+                            display: 'inline-block', 
+                            animation: refreshing ? 'spin 1.5s linear infinite' : 'none' 
+                        }}>🔄</span>
+                        {refreshing ? 'Refreshing...' : 'Refresh'}
                     </button>
                     <Link to="/create-invoices" className="btn btn-primary">
                         <MdAdd size={18}/> New Invoice
