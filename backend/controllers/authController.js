@@ -485,6 +485,61 @@ const otpLoginVerify = async (req, res) => {
   }
 };
 
+const testSMTP = async (req, res) => {
+  try {
+    const nodemailer = require('nodemailer');
+    console.log('Running live SMTP test endpoint...');
+    console.log(`EMAIL_USER: ${process.env.EMAIL_USER}`);
+    console.log(`EMAIL_PASS: ${process.env.EMAIL_PASS ? '********' : 'NOT CONFIGURED'}`);
+
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      return res.status(400).json({
+        success: false,
+        msg: 'EMAIL_USER or EMAIL_PASS environment variables are not defined in the backend environment!',
+        envKeysFound: Object.keys(process.env).filter(k => k.includes('EMAIL') || k.includes('MONGO') || k.includes('PORT'))
+      });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+
+    const info = await transporter.sendMail({
+      from: `"Side Hustle Test" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_USER,
+      subject: 'Render Live SMTP Test',
+      html: '<h3>Success!</h3><p>Your live Render server is fully connected to Gmail SMTP and sending real emails perfectly! ✅</p>'
+    });
+
+    res.json({
+      success: true,
+      msg: 'Live SMTP connection succeeded and test email was sent!',
+      messageId: info.messageId,
+      response: info.response
+    });
+  } catch (err) {
+    console.error('testSMTP error:', err);
+    res.status(500).json({
+      success: false,
+      msg: 'SMTP Connection Failed!',
+      errorName: err.name,
+      errorMessage: err.message,
+      errorStack: err.stack,
+      envUser: process.env.EMAIL_USER || 'undefined',
+      envPassConfigured: !!process.env.EMAIL_PASS
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -497,5 +552,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   otpLoginRequest,
-  otpLoginVerify
+  otpLoginVerify,
+  testSMTP
 };

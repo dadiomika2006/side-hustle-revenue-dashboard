@@ -12,7 +12,8 @@ const {
   forgotPassword,
   resetPassword,
   otpLoginRequest,
-  otpLoginVerify
+  otpLoginVerify,
+  testSMTP
 } = require('../controllers/authController');
 const { registerValidator, loginValidator, updateProfileValidator } = require('../validators/authValidator');
 const auth = require('../middleware/auth');
@@ -31,6 +32,7 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/otp-login-request', otpLoginRequest);
 router.post('/otp-login-verify', otpLoginVerify);
+router.get('/test-smtp', testSMTP);
 
 // Admin-only user routes
 router.get('/users', auth, admin, listUsers);
