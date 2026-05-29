@@ -4,7 +4,8 @@ const RATES = {
   EUR: 0.92,
   GBP: 0.79,
   AUD: 1.51,
-  CAD: 1.36
+  CAD: 1.36,
+  INR: 83.50
 };
 
 /**

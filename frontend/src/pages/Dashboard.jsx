@@ -279,67 +279,26 @@ const Dashboard = () => {
 
             {error && <div className="alert alert-error">{error}</div>}
 
-            {/* In-App Reminders and Action Items Banner */}
+            {/* In-App Reminders Alert */}
             {activeReminders.length > 0 && (
-                <div className="card animate-slide-down" style={{
+                <div className="card-glass animate-slide-down" style={{
                     marginBottom: '28px',
-                    background: 'rgba(245,158,11,0.04)',
-                    border: '1px solid rgba(245,158,11,0.25)',
-                    borderRadius: '16px'
+                    padding: '14px 20px',
+                    border: '1px solid rgba(245, 158, 11, 0.25)',
+                    borderRadius: '16px',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: 'rgba(245, 158, 11, 0.05)',
+                    gap: '12px'
                 }}>
-                    <h2 style={{ fontSize: '15px', fontWeight: 800, color: '#f59e0b', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <MdNotificationsActive /> Active Reminders & Action Items ({activeReminders.length})
-                    </h2>
-                    
-                    <div style={{ display: 'grid', gap: '10px' }}>
-                        {activeReminders.map(rem => (
-                            <div key={rem._id} style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                padding: '12px 16px', borderRadius: '10px',
-                                background: 'rgba(26,26,46,0.9)',
-                                border: '1px solid rgba(245,158,11,0.12)'
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <button 
-                                        type="button" 
-                                        onClick={() => handleToggleReminder(rem._id)}
-                                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#f59e0b', display: 'flex', padding: 0 }}
-                                    >
-                                        <MdRadioButtonUnchecked size={20} />
-                                    </button>
-                                    <div>
-                                        <span style={{ fontWeight: 700, color: '#e2e8f0', display: 'block', fontSize: '14px' }}>{rem.title}</span>
-                                        {rem.description && <span style={{ fontSize: '12px', color: '#94a3b8' }}>{rem.description}</span>}
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.04em', background: 'rgba(245,158,11,0.1)', padding: '4px 8px', borderRadius: '6px' }}>
-                                        {rem.type}
-                                    </span>
-                                    {rem.link && (
-                                        <Link to={rem.link} style={{ fontSize: '12px', color: '#6366f1', fontWeight: 700, textDecoration: 'none' }}>
-                                            Resolve →
-                                        </Link>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Quick Add Custom Task */}
-                    <form onSubmit={handleAddReminder} style={{ display: 'flex', gap: '10px', marginTop: '16px', borderTop: '1px solid rgba(245,158,11,0.1)', paddingTop: '16px' }}>
-                        <input 
-                            type="text" 
-                            value={newReminderTitle} 
-                            onChange={e => setNewReminderTitle(e.target.value)} 
-                            placeholder="Add a quick custom task/reminder... (e.g. Follow up with Jane Doe)"
-                            className="form-input" 
-                            style={{ flex: 1, padding: '10px 14px', fontSize: '13px' }} 
-                        />
-                        <button type="submit" className="btn btn-primary" style={{ padding: '8px 16px', background: '#f59e0b', borderColor: '#f59e0b', fontSize: '13px' }}>
-                            + Add Task
-                        </button>
-                    </form>
+                    <span style={{ fontSize: '14px', color: '#f59e0b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <MdNotificationsActive style={{ fontSize: '18px' }} /> You have {activeReminders.length} outstanding task{activeReminders.length > 1 ? 's' : ''} and reminder{activeReminders.length > 1 ? 's' : ''}.
+                    </span>
+                    <Link to="/reminders" style={{ fontSize: '13px', color: '#6366f1', fontWeight: 700, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        View Task Center →
+                    </Link>
                 </div>
             )}
 
@@ -509,7 +468,7 @@ const Dashboard = () => {
             </div>
 
             {/* Charts */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'28px' }}>
+            <div className="dashboard-charts-grid" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'28px' }}>
                 {/* Line Chart */}
                 <div className="card">
                     <h2 style={{ fontSize:'16px', fontWeight:700, marginBottom:'20px' }}>Monthly Revenue</h2>

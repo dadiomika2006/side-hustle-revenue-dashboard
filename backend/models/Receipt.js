@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const ReceiptSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   transaction: { type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' },
   invoice: { type: mongoose.Schema.Types.ObjectId, ref: 'Invoice' },
   originalName: { type: String },

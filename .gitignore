@@ -24,3 +24,7 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Custom overrides
+backend/local_db.json
+*.lnk

@@ -38,8 +38,8 @@ const UserSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    enum: ['USD', 'EUR', 'GBP', 'AUD', 'CAD'],
-    default: 'USD'
+    enum: ['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'INR'],
+    default: 'INR'
   },
   themeMode: {
     type: String,

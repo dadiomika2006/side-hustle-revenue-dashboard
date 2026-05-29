@@ -23,12 +23,12 @@ const TAX_CATEGORIES = [
   'Other Business Expenses'
 ];
 const PAYMENT_METHODS = ['cash', 'bank', 'card', 'online'];
-const CURRENCIES = ['USD', 'EUR', 'GBP', 'AUD', 'CAD'];
+const CURRENCIES = ['INR', 'USD', 'EUR', 'GBP', 'AUD', 'CAD'];
 
 const AddTransaction = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const baseCurrency = user?.currency || 'USD';
+  const baseCurrency = user?.currency || 'INR';
   
   const [activeTab, setActiveTab] = useState('add'); // 'add', 'recurring-rules', or 'history'
   const [clients, setClients] = useState([]);

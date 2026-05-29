@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const MileageSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   date: { type: Date, required: true },
   miles: { type: Number, required: true, min: 0 },
   vehicle: { type: String },

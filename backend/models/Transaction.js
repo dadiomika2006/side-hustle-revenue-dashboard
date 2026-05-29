@@ -8,7 +8,8 @@ const TransactionSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
+    index: true
   },
   client: {
     type: mongoose.Schema.Types.ObjectId,
@@ -55,8 +56,8 @@ const TransactionSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    enum: ['USD', 'EUR', 'GBP', 'AUD', 'CAD'],
-    default: 'USD'
+    enum: ['USD', 'EUR', 'GBP', 'AUD', 'CAD', 'INR'],
+    default: 'INR'
   },
   exchangeRate: {
     type: Number,

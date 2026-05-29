@@ -23,6 +23,7 @@ import AdminOverview from './pages/AdminOverview.jsx';
 import TaxBuckets from './pages/TaxBuckets.jsx';
 import RevenueDashboard from './pages/Dashboard.jsx';
 import IncomeStreams from './pages/IncomeStreams.jsx';
+import Reminders from './pages/Reminders.jsx';
 import Navbar from './components/Navbar.jsx';
 
 const PrivateRoute = ({ children }) => {
@@ -151,6 +152,7 @@ function App() {
       <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
       <Route path="/export" element={<PrivateRoute><ExportPage /></PrivateRoute>} />
       <Route path="/receipts" element={<PrivateRoute><Receipts /></PrivateRoute>} />
+      <Route path="/reminders" element={<PrivateRoute><Reminders /></PrivateRoute>} />
       <Route path="/admin" element={<PrivateRoute><AdminOverview /></PrivateRoute>} />
       <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
       <Route path="/dashboard/revenue" element={<PrivateRoute><RevenueDashboard /></PrivateRoute>} />

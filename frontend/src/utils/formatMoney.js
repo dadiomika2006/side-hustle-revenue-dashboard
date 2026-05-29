@@ -10,7 +10,8 @@ const getLocaleForCurrency = (currency) => {
     EUR: 'en-IE',
     GBP: 'en-GB',
     AUD: 'en-AU',
-    CAD: 'en-CA'
+    CAD: 'en-CA',
+    INR: 'en-IN'
   };
   return map[currency] || navigator.language || 'en-US';
 };
@@ -19,14 +20,14 @@ const getLocaleForCurrency = (currency) => {
  * Formats a numerical amount as a currency string.
  *
  * @param {number} amount - The amount to format.
- * @param {string} [currency=USD] - The currency code.
+ * @param {string} [currency=INR] - The currency code.
  * @param {number} [minimumFractionDigits=2]
  * @param {number} [maximumFractionDigits=2]
  * @returns {string} The formatted currency string.
  */
 export const formatMoney = (
   amount,
-  currency = 'USD',
+  currency = 'INR',
   minimumFractionDigits = 2,
   maximumFractionDigits = 2
 ) => {

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import {
   MdDashboard, MdSwapHoriz, MdPeople, MdReceipt, MdAddBox,
   MdBarChart, MdAssessment, MdSettings, MdLogout, MdCalculate,
-  MdTrendingUp, MdInventory, MdShield, MdMenu, MdClose
+  MdTrendingUp, MdInventory, MdShield, MdMenu, MdClose, MdNotificationsActive
 } from 'react-icons/md';
 
 const baseNavItems = [
@@ -20,6 +20,7 @@ const baseNavItems = [
   { to: '/reports',         label: 'Reports',       icon: MdAssessment },
   { to: '/export',          label: 'Exports',       icon: MdBarChart },
   { to: '/receipts',        label: 'Receipts',      icon: MdInventory },
+  { to: '/reminders',       label: 'Reminders',     icon: MdNotificationsActive },
   { to: '/calculator',      label: 'Calculator',    icon: MdCalculate },
 ];
 

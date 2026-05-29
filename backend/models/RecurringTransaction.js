@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const RecurringTransactionSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   client: { type: mongoose.Schema.Types.ObjectId, ref: 'Client' },
   type: { type: String, enum: ['income', 'expense'], required: true },
   amount: { type: Number, required: true, min: 0 },

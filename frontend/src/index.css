@@ -487,6 +487,9 @@ tbody tr:hover {
   .dashboard-footer-grid {
     grid-template-columns: 1fr !important;
   }
+  .dashboard-charts-grid {
+    grid-template-columns: 1fr !important;
+  }
   .quick-actions-sidebar {
     display: none !important;
   }
