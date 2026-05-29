@@ -487,85 +487,86 @@ const otpLoginVerify = async (req, res) => {
 
 const testSMTP = async (req, res) => {
   try {
-    console.log('Running live SMTP / Email test endpoint...');
+    console.log('Running live Email test endpoint...');
+    console.log(`BREVO_API_KEY present: ${!!process.env.BREVO_API_KEY}`);
     console.log(`RESEND_API_KEY present: ${!!process.env.RESEND_API_KEY}`);
     console.log(`EMAIL_USER: ${process.env.EMAIL_USER}`);
-    console.log(`EMAIL_PASS: ${process.env.EMAIL_PASS ? '********' : 'NOT CONFIGURED'}`);
 
+    const toAddress = req.query.to || process.env.EMAIL_USER || 'dadiomika@gmail.com';
+
+    // 1. Try Brevo first (supports sending to ANY email — no domain needed)
+    if (process.env.BREVO_API_KEY) {
+      console.log('Testing Brevo HTTP API...');
+      const senderEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'Side Hustle Dashboard', email: senderEmail },
+          to: [{ email: toAddress }],
+          subject: 'Render Live Brevo API Test',
+          htmlContent: '<h3>Success!</h3><p>Your live Render server is fully connected to Brevo and sending real emails to <b>any address</b> perfectly! ✅</p>'
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(`Brevo API error: ${JSON.stringify(data)}`);
+
+      return res.json({
+        success: true,
+        msg: 'Live email via Brevo HTTP API succeeded! Test email sent to any address.',
+        provider: 'Brevo HTTP API',
+        from: senderEmail,
+        to: toAddress,
+        data
+      });
+    }
+
+    // 2. Try Resend fallback (only sends to owner email without verified domain)
     if (process.env.RESEND_API_KEY) {
       console.log('Testing Resend HTTP API...');
       const { Resend } = require('resend');
       const resend = new Resend(process.env.RESEND_API_KEY);
-      
       const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-      const toAddress = req.query.to || process.env.EMAIL_USER || 'dadiomika@gmail.com';
-      
       const data = await resend.emails.send({
         from: fromAddress,
         to: toAddress,
         subject: 'Render Live Resend API Test',
-        html: '<h3>Success!</h3><p>Your live Render server is fully connected to the Resend HTTP API and sending real emails perfectly! ✅</p>'
+        html: '<h3>Success!</h3><p>Your live Render server is connected to Resend! ✅ Note: free tier only sends to owner email without a verified domain.</p>'
       });
-      
       return res.json({
         success: true,
-        msg: `Live email via Resend HTTP API succeeded and test email was sent!`,
+        msg: 'Live email via Resend HTTP API succeeded!',
         provider: 'Resend HTTP API',
+        warning: 'Resend free tier only sends to your own email. Switch to Brevo to send to all users.',
         from: fromAddress,
         to: toAddress,
         data
       });
     }
 
-    const nodemailer = require('nodemailer');
-
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      return res.status(400).json({
-        success: false,
-        msg: 'Neither RESEND_API_KEY nor (EMAIL_USER and EMAIL_PASS) environment variables are defined in the backend environment!',
-        envKeysFound: Object.keys(process.env).filter(k => k.includes('EMAIL') || k.includes('RESEND') || k.includes('MONGO') || k.includes('PORT'))
-      });
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      family: 4,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
+    // 3. No API keys configured
+    return res.status(400).json({
+      success: false,
+      msg: 'No email API key configured. Please add BREVO_API_KEY in your Render environment variables.',
+      hasBrevoKey: !!process.env.BREVO_API_KEY,
+      hasResendKey: !!process.env.RESEND_API_KEY,
+      envKeysFound: Object.keys(process.env).filter(k => k.includes('EMAIL') || k.includes('BREVO') || k.includes('RESEND'))
     });
 
-    const toAddress = req.query.to || process.env.EMAIL_USER;
-    const info = await transporter.sendMail({
-      from: `"Side Hustle Test" <${process.env.EMAIL_USER}>`,
-      to: toAddress,
-      subject: 'Render Live SMTP Test',
-      html: '<h3>Success!</h3><p>Your live Render server is fully connected to Gmail SMTP and sending real emails perfectly! ✅</p>'
-    });
-
-    res.json({
-      success: true,
-      msg: 'Live SMTP connection succeeded and test email was sent!',
-      provider: 'Nodemailer SMTP',
-      messageId: info.messageId,
-      response: info.response
-    });
   } catch (err) {
     console.error('testSMTP error:', err);
     res.status(500).json({
       success: false,
-      msg: 'Email/SMTP Connection Failed!',
+      msg: 'Email delivery failed!',
       errorName: err.name,
       errorMessage: err.message,
-      errorStack: err.stack,
-      envUser: process.env.EMAIL_USER || 'undefined',
-      envPassConfigured: !!process.env.EMAIL_PASS,
+      hasBrevoKey: !!process.env.BREVO_API_KEY,
       hasResendKey: !!process.env.RESEND_API_KEY
     });
   }

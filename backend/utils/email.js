@@ -36,22 +36,49 @@ const sendEmail = async ({ to, subject, html }) => {
     return { messageId: 'mock-message-id-' + Date.now() };
   }
 
-  // Use Resend HTTP API if key is available to bypass SMTP blocking on Render
+  // Use Brevo (Sendinblue) HTTP API — allows sending to ANY email, only needs sender email verified (no domain required)
+  if (process.env.BREVO_API_KEY) {
+    try {
+      const senderEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+      console.log(`Routing email through Brevo API. From: ${senderEmail}, To: ${to}`);
+
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'Side Hustle Dashboard', email: senderEmail },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html
+        })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        console.error('Brevo API error response:', data);
+        throw new Error(`Brevo API error: ${JSON.stringify(data)}`);
+      }
+
+      console.log('Email sent successfully via Brevo:', data);
+      return data;
+    } catch (error) {
+      console.error('Error sending email via Brevo:', error);
+      throw error;
+    }
+  }
+
+  // Use Resend HTTP API as fallback (note: free tier only sends to owner email without verified domain)
   if (process.env.RESEND_API_KEY) {
     try {
       const { Resend } = require('resend');
       const resend = new Resend(process.env.RESEND_API_KEY);
-      
       const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
       console.log(`Routing email through Resend API. From: ${fromAddress}, To: ${to}`);
-      
-      const data = await resend.emails.send({
-        from: fromAddress,
-        to,
-        subject,
-        html
-      });
-      
+      const data = await resend.emails.send({ from: fromAddress, to, subject, html });
       console.log('Email sent successfully via Resend:', data);
       return data;
     } catch (error) {
