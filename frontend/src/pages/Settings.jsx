@@ -126,11 +126,12 @@ const Settings = () => {
               <div className="form-group">
                 <label className="form-label">Currency</label>
                 <select name="currency" value={formData.currency} onChange={handleChange} className="form-input" style={{ paddingLeft: '14px' }}>
-                  <option value="USD">USD - US Dollar</option>
-                  <option value="EUR">EUR - Euro</option>
-                  <option value="GBP">GBP - British Pound</option>
-                  <option value="AUD">AUD - Australian Dollar</option>
-                  <option value="CAD">CAD - Canadian Dollar</option>
+                  <option value="INR">INR - Indian Rupee (₹)</option>
+                  <option value="USD">USD - US Dollar ($)</option>
+                  <option value="EUR">EUR - Euro (€)</option>
+                  <option value="GBP">GBP - British Pound (£)</option>
+                  <option value="AUD">AUD - Australian Dollar (A$)</option>
+                  <option value="CAD">CAD - Canadian Dollar (C$)</option>
                 </select>
                 <div style={{ fontSize: '11px', color: '#6366f1', marginTop: '6px', fontWeight: 600 }}>Selected: {formData.currency}</div>
               </div>

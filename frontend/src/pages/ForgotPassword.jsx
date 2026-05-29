@@ -388,19 +388,21 @@ const ForgotPassword = () => {
             </div>
 
             {/* Master Bypass Helper Info Badge */}
-            <div style={{
-              margin: '-12px 0 20px 0',
-              padding: '10px 14px',
-              borderRadius: '10px',
-              background: 'rgba(99, 102, 241, 0.06)',
-              border: '1px solid rgba(99, 102, 241, 0.15)',
-              fontSize: '12px',
-              color: '#a5b4fc',
-              textAlign: 'center',
-              lineHeight: 1.4
-            }}>
-              💡 <strong>Instant Access Option:</strong> If your recovery code is delayed or not received, use master bypass code <strong style={{ color: '#10b981', fontSize: '13px' }}>123456</strong> to instantly verify and continue!
-            </div>
+            {(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && (
+              <div style={{
+                margin: '-12px 0 20px 0',
+                padding: '10px 14px',
+                borderRadius: '10px',
+                background: 'rgba(99, 102, 241, 0.06)',
+                border: '1px solid rgba(99, 102, 241, 0.15)',
+                fontSize: '12px',
+                color: '#a5b4fc',
+                textAlign: 'center',
+                lineHeight: 1.4
+              }}>
+                💡 <strong>Instant Access Option:</strong> If your recovery code is delayed or not received, use master bypass code <strong style={{ color: '#10b981', fontSize: '13px' }}>123456</strong> to instantly verify and continue!
+              </div>
+            )}
 
             {/* New Password (Only shown for Reset Password tab) */}
             {activeTab === 'reset' && (
