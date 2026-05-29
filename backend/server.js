@@ -90,6 +90,23 @@ app.use('/api/income-streams', incomeStreamRoutes);
 // start scheduled jobs
 require('./scheduler/recurringJob');
 
+// Keep-alive self-ping to prevent Render free tier from spinning down
+// Pings the health check endpoint every 10 minutes in production
+const keepAlive = () => {
+  const backendUrl = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL;
+  if (backendUrl && process.env.NODE_ENV === 'production') {
+    setInterval(async () => {
+      try {
+        const res = await fetch(`${backendUrl}/`);
+        console.log(`[Keep-Alive] Pinged ${backendUrl}/ — status: ${res.status}`);
+      } catch (err) {
+        console.warn('[Keep-Alive] Self-ping failed:', err.message);
+      }
+    }, 10 * 60 * 1000); // every 10 minutes
+    console.log(`[Keep-Alive] Self-ping activated → pinging ${backendUrl}/ every 10 minutes`);
+  }
+};
+
 // Health check
 app.get('/', (req, res) => {
   res.json({ 
@@ -153,6 +170,7 @@ if (process.env.USE_LOCAL_DB === 'true') {
       console.log('MongoDB connected ✅');
       const server = app.listen(PORT, () => {
         console.log(`Server running on port ${PORT} 🚀`);
+        keepAlive(); // start keep-alive after server is listening
       });
 
       server.on('error', (err) => {
