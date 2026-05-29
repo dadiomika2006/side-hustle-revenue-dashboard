@@ -487,16 +487,43 @@ const otpLoginVerify = async (req, res) => {
 
 const testSMTP = async (req, res) => {
   try {
-    const nodemailer = require('nodemailer');
-    console.log('Running live SMTP test endpoint...');
+    console.log('Running live SMTP / Email test endpoint...');
+    console.log(`RESEND_API_KEY present: ${!!process.env.RESEND_API_KEY}`);
     console.log(`EMAIL_USER: ${process.env.EMAIL_USER}`);
     console.log(`EMAIL_PASS: ${process.env.EMAIL_PASS ? '********' : 'NOT CONFIGURED'}`);
+
+    if (process.env.RESEND_API_KEY) {
+      console.log('Testing Resend HTTP API...');
+      const { Resend } = require('resend');
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      
+      const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+      const toAddress = req.query.to || process.env.EMAIL_USER || 'dadiomika@gmail.com';
+      
+      const data = await resend.emails.send({
+        from: fromAddress,
+        to: toAddress,
+        subject: 'Render Live Resend API Test',
+        html: '<h3>Success!</h3><p>Your live Render server is fully connected to the Resend HTTP API and sending real emails perfectly! ✅</p>'
+      });
+      
+      return res.json({
+        success: true,
+        msg: `Live email via Resend HTTP API succeeded and test email was sent!`,
+        provider: 'Resend HTTP API',
+        from: fromAddress,
+        to: toAddress,
+        data
+      });
+    }
+
+    const nodemailer = require('nodemailer');
 
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       return res.status(400).json({
         success: false,
-        msg: 'EMAIL_USER or EMAIL_PASS environment variables are not defined in the backend environment!',
-        envKeysFound: Object.keys(process.env).filter(k => k.includes('EMAIL') || k.includes('MONGO') || k.includes('PORT'))
+        msg: 'Neither RESEND_API_KEY nor (EMAIL_USER and EMAIL_PASS) environment variables are defined in the backend environment!',
+        envKeysFound: Object.keys(process.env).filter(k => k.includes('EMAIL') || k.includes('RESEND') || k.includes('MONGO') || k.includes('PORT'))
       });
     }
 
@@ -514,9 +541,10 @@ const testSMTP = async (req, res) => {
       }
     });
 
+    const toAddress = req.query.to || process.env.EMAIL_USER;
     const info = await transporter.sendMail({
       from: `"Side Hustle Test" <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_USER,
+      to: toAddress,
       subject: 'Render Live SMTP Test',
       html: '<h3>Success!</h3><p>Your live Render server is fully connected to Gmail SMTP and sending real emails perfectly! ✅</p>'
     });
@@ -524,6 +552,7 @@ const testSMTP = async (req, res) => {
     res.json({
       success: true,
       msg: 'Live SMTP connection succeeded and test email was sent!',
+      provider: 'Nodemailer SMTP',
       messageId: info.messageId,
       response: info.response
     });
@@ -531,12 +560,13 @@ const testSMTP = async (req, res) => {
     console.error('testSMTP error:', err);
     res.status(500).json({
       success: false,
-      msg: 'SMTP Connection Failed!',
+      msg: 'Email/SMTP Connection Failed!',
       errorName: err.name,
       errorMessage: err.message,
       errorStack: err.stack,
       envUser: process.env.EMAIL_USER || 'undefined',
-      envPassConfigured: !!process.env.EMAIL_PASS
+      envPassConfigured: !!process.env.EMAIL_PASS,
+      hasResendKey: !!process.env.RESEND_API_KEY
     });
   }
 };

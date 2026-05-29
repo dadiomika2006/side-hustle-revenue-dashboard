@@ -36,6 +36,30 @@ const sendEmail = async ({ to, subject, html }) => {
     return { messageId: 'mock-message-id-' + Date.now() };
   }
 
+  // Use Resend HTTP API if key is available to bypass SMTP blocking on Render
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const { Resend } = require('resend');
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      
+      const fromAddress = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+      console.log(`Routing email through Resend API. From: ${fromAddress}, To: ${to}`);
+      
+      const data = await resend.emails.send({
+        from: fromAddress,
+        to,
+        subject,
+        html
+      });
+      
+      console.log('Email sent successfully via Resend:', data);
+      return data;
+    } catch (error) {
+      console.error('Error sending email via Resend:', error);
+      throw error;
+    }
+  }
+
   try {
     const mailOptions = {
       from: `"Side Hustle Dashboard" <${process.env.EMAIL_USER}>`,
