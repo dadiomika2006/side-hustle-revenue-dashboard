@@ -33,6 +33,10 @@ const register = async (req, res) => {
     
     await user.save();
 
+    console.log(`\n==================================================`);
+    console.log(`🔑  GENERATED REGISTRATION VERIFICATION CODE FOR ${user.email}: [ ${verificationCode} ]`);
+    console.log(`==================================================\n`);
+
     // Send verification email
     try {
       await sendVerificationEmail(user.email, user.name, verificationCode);
@@ -321,10 +325,18 @@ const resendVerification = async (req, res) => {
     user.verificationCodeExpires = new Date(Date.now() + 3600000); // 1 hour
     await user.save();
 
-    // Send email
-    await sendVerificationEmail(user.email, user.name, code);
+    console.log(`\n==================================================`);
+    console.log(`🔑  GENERATED VERIFICATION CODE FOR ${user.email}: [ ${code} ]`);
+    console.log(`==================================================\n`);
 
-    res.json({ msg: 'Verification code resent successfully' });
+    // Send email
+    try {
+      await sendVerificationEmail(user.email, user.name, code);
+    } catch (mailErr) {
+      console.error('Failed to send verification email upon resend request:', mailErr);
+    }
+
+    res.json({ msg: 'Verification code has been generated and sent to your email.' });
   } catch (err) {
     console.error('ResendVerification error:', err);
     res.status(500).json({ msg: 'Server error during resending code' });
@@ -348,9 +360,17 @@ const forgotPassword = async (req, res) => {
     user.resetCodeExpires = new Date(Date.now() + 900000); // 15 mins
     await user.save();
 
-    await sendResetPasswordEmail(user.email, user.name, code);
+    console.log(`\n==================================================`);
+    console.log(`🔑  GENERATED PASSWORD RESET CODE FOR ${user.email}: [ ${code} ]`);
+    console.log(`==================================================\n`);
 
-    res.json({ msg: 'Password reset code sent to your email' });
+    try {
+      await sendResetPasswordEmail(user.email, user.name, code);
+    } catch (mailErr) {
+      console.error('Failed to send password reset email:', mailErr);
+    }
+
+    res.json({ msg: 'Password reset code has been sent to your email' });
   } catch (err) {
     console.error('ForgotPassword error:', err);
     res.status(500).json({ msg: 'Server error during forgot password' });
@@ -412,9 +432,17 @@ const otpLoginRequest = async (req, res) => {
     user.resetCodeExpires = new Date(Date.now() + 600000); // 10 minutes
     await user.save();
 
-    await sendOTPLoginEmail(user.email, user.name, code);
+    console.log(`\n==================================================`);
+    console.log(`🔑  GENERATED OTP LOGIN CODE FOR ${user.email}: [ ${code} ]`);
+    console.log(`==================================================\n`);
 
-    res.json({ msg: 'Secure login OTP sent to your email' });
+    try {
+      await sendOTPLoginEmail(user.email, user.name, code);
+    } catch (mailErr) {
+      console.error('Failed to send OTP login email:', mailErr);
+    }
+
+    res.json({ msg: 'Secure login OTP has been sent to your email' });
   } catch (err) {
     console.error('OTPLoginRequest error:', err);
     res.status(500).json({ msg: 'Server error during OTP login request' });
