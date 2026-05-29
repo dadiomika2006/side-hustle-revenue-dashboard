@@ -37,13 +37,9 @@ const register = async (req, res) => {
     console.log(`🔑  GENERATED REGISTRATION VERIFICATION CODE FOR ${user.email}: [ ${verificationCode} ]`);
     console.log(`==================================================\n`);
 
-    // Send verification email
-    try {
-      await sendVerificationEmail(user.email, user.name, verificationCode);
-    } catch (mailErr) {
-      console.error('Failed to send verification email upon registration:', mailErr);
-      // We still registered them, they can request a resend later
-    }
+    // Send verification email in background (Do not await to prevent SMTP hangs from blocking response!)
+    sendVerificationEmail(user.email, user.name, verificationCode)
+      .catch(mailErr => console.error('Failed to send verification email upon registration:', mailErr));
 
     res.status(201).json({
       msg: 'Registration successful. A 6-digit verification code has been sent to your email.',
@@ -329,12 +325,9 @@ const resendVerification = async (req, res) => {
     console.log(`🔑  GENERATED VERIFICATION CODE FOR ${user.email}: [ ${code} ]`);
     console.log(`==================================================\n`);
 
-    // Send email
-    try {
-      await sendVerificationEmail(user.email, user.name, code);
-    } catch (mailErr) {
-      console.error('Failed to send verification email upon resend request:', mailErr);
-    }
+    // Send email in background (Do not await to prevent SMTP hangs from blocking response!)
+    sendVerificationEmail(user.email, user.name, code)
+      .catch(mailErr => console.error('Failed to send verification email upon resend request:', mailErr));
 
     res.json({ msg: 'Verification code has been generated and sent to your email.' });
   } catch (err) {
@@ -364,11 +357,9 @@ const forgotPassword = async (req, res) => {
     console.log(`🔑  GENERATED PASSWORD RESET CODE FOR ${user.email}: [ ${code} ]`);
     console.log(`==================================================\n`);
 
-    try {
-      await sendResetPasswordEmail(user.email, user.name, code);
-    } catch (mailErr) {
-      console.error('Failed to send password reset email:', mailErr);
-    }
+    // Send email in background (Do not await to prevent SMTP hangs from blocking response!)
+    sendResetPasswordEmail(user.email, user.name, code)
+      .catch(mailErr => console.error('Failed to send password reset email:', mailErr));
 
     res.json({ msg: 'Password reset code has been sent to your email' });
   } catch (err) {
@@ -436,11 +427,9 @@ const otpLoginRequest = async (req, res) => {
     console.log(`🔑  GENERATED OTP LOGIN CODE FOR ${user.email}: [ ${code} ]`);
     console.log(`==================================================\n`);
 
-    try {
-      await sendOTPLoginEmail(user.email, user.name, code);
-    } catch (mailErr) {
-      console.error('Failed to send OTP login email:', mailErr);
-    }
+    // Send email in background (Do not await to prevent SMTP hangs from blocking response!)
+    sendOTPLoginEmail(user.email, user.name, code)
+      .catch(mailErr => console.error('Failed to send OTP login email:', mailErr));
 
     res.json({ msg: 'Secure login OTP has been sent to your email' });
   } catch (err) {
